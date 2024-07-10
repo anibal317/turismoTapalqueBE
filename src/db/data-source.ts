@@ -1,7 +1,4 @@
 import { DataSource, DataSourceOptions } from "typeorm"
-import { User } from "src/users/entities/user.entity";
-import { Member } from "src/members/entities/member.entity";
-import { MemberState } from "src/member-state/entities/member-state.entity";
 import 'dotenv/config'
 
 export const dataSourceOptions: DataSourceOptions = {
