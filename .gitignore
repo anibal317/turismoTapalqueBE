@@ -1,3 +1,7 @@
+# Custom ingnored resources
+.eslintrc.js
+test/
+
 # Logs
 logs
 *.log
