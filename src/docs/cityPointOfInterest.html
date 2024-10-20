@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tursimos: Dev documentation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"
+        defer></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <h1>Documentación de la API</h1>
+    </header>
+    <div class="endpointHeader accordion" id="accordionExample">
+        <!-- Get All -->
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button get" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <h3><span class="method ">GET</span> /city-point-of-interest/all</h3>
+                </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <strong>
+                       Devuelve todos los puntos de interes, activos y no activos
+                </div>
+            </div>
+        </div>
+        <!-- /deleted -->
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button get" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <h3><span class="method ">GET</span> /city-point-of-interest/deleted</h3>
+                </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <strong>
+                       Devuelve todos los puntos de interes eliminados logicamente 
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button post" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <h3><span class="method ">POST</span> /city-point-of-interest</h3>
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <p>Create a new city point of interest.</p>
+                </div>
+                <section>
+                    <h4>Request Body:</h4>
+                    <table class="param-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="required">name</td>
+                                <td>string</td>
+                                <td>Name of the point of interest.</td>
+                            </tr>
+                            <tr>
+                                <td>location</td>
+                                <td>string</td>
+                                <td>Location (coordinates or address).</td>
+                            </tr>
+                            <tr>
+                                <td class="required">type</td>
+                                <td>number</td>
+                                <td>Type identifier for the point of interest.</td>
+                            </tr>
+                            <tr class="required">
+                                <td>typeId</td>
+                                <td>number</td>
+                                <td>Tipo de la atracción, es un enum:
+                                    <div class="pre">
+                                        <p>ADMIN = 'ADMIN',</p>
+                                        <p> USER = 'USER',</p>
+                                        <p>EVENT='EVENTS',</p>
+                                        <p> HOSPITALITY='HOSPITALITY',</p>
+                                        <p> GASTRONOMY='GASTRONOMY'</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="required">
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+                <h4>Example:</h4>
+                <pre class="pre">
+                    POST /city-point-of-interest
+                    {
+                        "name": "Central Park",
+                        "location": "New York",
+                        "type": 1
+                    }
+            </pre>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button patch" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <h3><span class="method ">PATCH</span> /city-point-of-interest</h3>
+                </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <strong>
+                        get
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button get" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <h3><span class="method ">GET</span> /city-point-of-interest/all</h3>
+                </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <strong>
+                       Devuelve todos los puntos de interes, activos y no activos
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button get" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <h3><span class="method ">GET</span> /city-point-of-interest/all</h3>
+                </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <strong>
+                       Devuelve todos los puntos de interes, activos y no activos
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button put" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <h3><span class="method ">PUT</span> /city-point-of-interest</h3>
+                </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <strong>
+                        get
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button delete" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <h3><span class="method ">DELETE</span> /city-point-of-interest</h3>
+                </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <strong>
+                        get
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
