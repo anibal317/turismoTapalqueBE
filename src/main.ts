@@ -6,7 +6,7 @@ import { RedirectMiddleware } from './redirect.middleware';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { SwaggerTheme, SwaggerThemeNameEnum } from 'swagger-themes';
 import { ExpressAdapter } from '@nestjs/platform-express';
-import * as express from 'express';
+import express from 'express';
 
 let app: any;
 
