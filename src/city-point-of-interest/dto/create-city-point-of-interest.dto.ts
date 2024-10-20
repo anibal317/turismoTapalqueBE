@@ -36,7 +36,7 @@ export class CreateCityPointOfInterestDto {
 
     @IsArray()
     @IsOptional()
-    images:string[]
+    images?:string[]
 
     @IsNumber()
     idUser:number

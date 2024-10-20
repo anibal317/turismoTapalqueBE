@@ -13,7 +13,8 @@ import { CreateCityPointOfInterestDto } from './dto/create-city-point-of-interes
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('City Points of Interest')
-@ApiBearerAuth() @Controller('city-point-of-interest')
+@ApiBearerAuth()
+@Controller('city-point-of-interest')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 export class CityPointOfInterestController {
   constructor(private readonly cityPointOfInterestService: CityPointOfInterestService) { }
@@ -26,6 +27,11 @@ export class CityPointOfInterestController {
     return await this.cityPointOfInterestService.findAllWithDeleted()
   }
 
+  @Get('events')
+  async findEvents() {
+    return await this.cityPointOfInterestService.findEvents()
+  }
+
   @Get('deleted')
   @Roles(UserRole.USER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Get all deleted city points of interest' })
@@ -34,15 +40,13 @@ export class CityPointOfInterestController {
     return await this.cityPointOfInterestService.findDeleted()
   }
 
-
-  @Post()
   @Post()
   @Roles(UserRole.USER, UserRole.ADMIN)
   @UseInterceptors(
-    FilesInterceptor('images', 10, {  // Subir hasta 10 archivos con el nombre `images`
+    FilesInterceptor('images', 10, {
       storage: diskStorage({
         destination: (req, file, cb) => {
-          const uploadPath = path.join(process.env.FILE_UPLOADS_DIR, 'citypoints');  // Cambia a la carpeta deseada
+          const uploadPath = path.join(process.env.FILE_UPLOADS_DIR, 'citypoints');
           fs.promises.mkdir(uploadPath, { recursive: true })
             .then(() => cb(null, uploadPath))
             .catch(err => cb(err, uploadPath));
@@ -65,7 +69,7 @@ export class CityPointOfInterestController {
       type: 'object',
       properties: {
         name: { type: 'string', example: 'Eiffel Tower' },
-        description: { type: 'string', example: 'Famous iron lattice tower on the Champ de Mars in Paris' },
+        description: { type: 'string', example: 'Famous iron lattice tower in Paris' },
         latitude: { type: 'number', example: 48.8584 },
         longitude: { type: 'number', example: 2.2945 },
         idType: { type: 'number', example: 1 },
@@ -83,15 +87,15 @@ export class CityPointOfInterestController {
   })
   async create(
     @UploadedFiles() files: Express.Multer.File[],
-    @Body() createCityPointDto: CreateCityPointOfInterestDto  // Asegúrate de usar el DTO correcto
+    @Body() createCityPointDto: CreateCityPointOfInterestDto
   ) {
-    // Paso 1: Procesar las imágenes subidas
-    const uploadedFiles = files.map(file => `/uploads/citypoints/${file.filename}`);  // Ruta de las imágenes subidas
+    // Verifica si hay archivos subidos
+    const uploadedFiles = files ? files.map(file => `/uploads/citypoints/${file.filename}`) : [];
 
     // Paso 2: Pasar las imágenes al DTO junto con los demás datos
     const cityPointDto = {
       ...createCityPointDto,
-      images: uploadedFiles  // Asigna las rutas de las imágenes
+      images: uploadedFiles.length > 0 ? uploadedFiles : createCityPointDto.images || []
     };
 
     // Paso 3: Crear el CityPointOfInterest
@@ -110,6 +114,7 @@ export class CityPointOfInterestController {
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'], description: 'Sort order' })
   async findAll(
     @Query('limit') limit?: number,
+    @Query('page') page?: number,
     @Query('idType') idType?: number,
     @Query('idSubtype') idSubtype?: number,
     @Query('idUser') idUser?: number,
@@ -117,12 +122,13 @@ export class CityPointOfInterestController {
     @Query('sortOrder') sortOrder?: 'ASC' | 'DESC'  // Dirección del ordenamiento
   ) {
     try {
-      let res = await this.cityPointOfInterestService.findAll(limit, idType, idSubtype, idUser, sortField, sortOrder);
-      return res
+      let res = await this.cityPointOfInterestService.findAll(limit,page,  idType, idSubtype, idUser, sortField, sortOrder);
+      return res;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
       }
+console.log(error);
 
       throw new HttpException('Failed to retrieve city points of interest', HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -142,7 +148,7 @@ export class CityPointOfInterestController {
   ) {
     try {
       let res = await this.cityPointOfInterestService.findOne(+id);
-      return res
+      return res;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -150,7 +156,6 @@ export class CityPointOfInterestController {
       throw new HttpException('Failed to retrieve city point of interest', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
 
   @Patch(':id')
   @Roles(UserRole.USER, UserRole.ADMIN)
@@ -174,67 +179,32 @@ export class CityPointOfInterestController {
   )
   @ApiOperation({ summary: 'Update a city point of interest' })
   @ApiResponse({ status: 200, description: 'The city point of interest has been successfully updated' })
-  @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 404, description: 'City point of interest not found' })
-  @ApiParam({ name: 'id', type: 'number', description: 'ID of the city point of interest to update' })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        name: { type: 'string', example: 'Updated Eiffel Tower' },
-        description: { type: 'string', example: 'Updated description of the Eiffel Tower' },
-        latitude: { type: 'number', example: 48.8584 },
-        longitude: { type: 'number', example: 2.2945 },
-        idType: { type: 'number', example: 1 },
-        idSubtype: { type: 'number', example: 2 },
-        idUser: { type: 'number', example: 1 },
-        images: {
-          type: 'array',
-          items: {
-            type: 'string',
-            format: 'binary',
-          },
-        },
-      },
-    },
-  })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
   async update(
     @Param('id') id: string,
-    @Body() updateCityPointOfInterestDto: UpdateCityPointOfInterestDto,
+    @Body() updateCityPointDto: UpdateCityPointOfInterestDto,
     @UploadedFiles() files: Express.Multer.File[]
   ) {
-    // Paso 1: Procesar las nuevas imágenes subidas
-    const newImages = files.map(file => `/uploads/citypoints/${file.filename}`);
+    // Verifica si hay archivos subidos
+    const uploadedFiles = files ? files.map(file => `/uploads/citypoints/${file.filename}`) : [];
 
-    // Paso 2: Llamar al servicio de actualización con las nuevas imágenes
-    return this.cityPointOfInterestService.update(+id, updateCityPointOfInterestDto, newImages);
+    // Paso 2: Combinar los nuevos datos con los existentes
+    const cityPointDto = {
+      ...updateCityPointDto,
+      images: uploadedFiles.length > 0 ? uploadedFiles : updateCityPointDto.images || []
+    };
+
+    // Paso 3: Actualizar el CityPointOfInterest
+    return this.cityPointOfInterestService.update(+id, cityPointDto);
   }
+
   @Delete(':id')
   @Roles(UserRole.USER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Delete a city point of interest' })
   @ApiResponse({ status: 200, description: 'The city point of interest has been successfully deleted' })
   @ApiResponse({ status: 404, description: 'City point of interest not found' })
-  @ApiParam({ name: 'id', type: 'number', description: 'ID of the city point of interest to delete' })
   async remove(@Param('id') id: string) {
-    try {
-      await this.cityPointOfInterestService.remove(+id);
-      return { message: 'City point of interest successfully removed' };
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      throw new HttpException('Failed to remove city point of interest', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  @Patch('restore/:id')
-  @Roles(UserRole.USER, UserRole.ADMIN)
-  @ApiOperation({ summary: 'Restore a deleted city point of interest' })
-  @ApiResponse({ status: 200, description: 'The city point of interest has been successfully restored' })
-  @ApiResponse({ status: 404, description: 'City point of interest not found' })
-  @ApiParam({ name: 'id', type: 'number', description: 'ID of the city point of interest to restore' })
-  async restore(@Param('id') id: string) {
-    return await this.cityPointOfInterestService.restore(+id)
+    return await this.cityPointOfInterestService.remove(+id);
   }
 }

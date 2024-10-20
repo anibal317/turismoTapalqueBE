@@ -9,6 +9,7 @@ import { SubtypeEntity } from '../subtype-entity/entities/subtype-entity.entity'
 import { User } from '../user/entities/user.entity';
 import * as path from 'path';
 import * as fs from 'fs';
+
 @Injectable()
 export class CityPointOfInterestService {
   constructor(
@@ -16,10 +17,10 @@ export class CityPointOfInterestService {
     private cityPointOfInterestRepository: Repository<CityPointOfInterest>,
 
     @InjectRepository(TypeEntity)
-    private typeRepository: Repository<TypeEntity>, // Repositorio para TypeEntity
+    private typeRepository: Repository<TypeEntity>,
 
     @InjectRepository(SubtypeEntity)
-    private subtypeRepository: Repository<SubtypeEntity>, // Repositorio para SubtypeEntity
+    private subtypeRepository: Repository<SubtypeEntity>,
 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>
@@ -27,64 +28,111 @@ export class CityPointOfInterestService {
 
   async create(createCityPointOfInterestDto: CreateCityPointOfInterestDto): Promise<CityPointOfInterest> {
     const { name, typeId, subtypeId, idUser, images } = createCityPointOfInterestDto;
-  
-    // (El resto de la lógica de validación)
-  
+
+    if (!typeId || !subtypeId) {
+      throw new HttpException('TypeId and SubtypeId are required', HttpStatus.BAD_REQUEST);
+    }
+
+    const imagesArray = Array.isArray(images) ? images : [];
+
     const newCityPoint = this.cityPointOfInterestRepository.create({
       ...createCityPointOfInterestDto,
-      images: Array.isArray(images) ? images : [],  // Asegura que sea un array de imágenes
+      images: imagesArray,
     });
-  
+
     return this.cityPointOfInterestRepository.save(newCityPoint);
   }
 
-  async findDeleted() {
-    return this.cityPointOfInterestRepository.find({
+  async findDeleted(limit: number = 10, page: number = 1) {
+    const [results, total] = await this.cityPointOfInterestRepository.findAndCount({
       where: { deletedAt: Not(IsNull()) },
-      relations: ['type', 'subtype'],  // Cargar relaciones
+      relations: ['type', 'subtype'],
+      take: limit,
+      skip: (page - 1) * limit,
       withDeleted: true
-    })
+    });
+
+    return { results, total, page, limit };
+  }
+
+  async findEvents(limit: number = 10, page: number = 1) {
+    const [res, total] = await this.cityPointOfInterestRepository.findAndCount({
+      where: {
+        typeId: 3,
+        state: Not(1)
+      },
+      order: {
+        startDate: 'ASC'
+      },
+      take: limit,
+      skip: (page - 1) * limit
+    });
+
+    return { results: res, total, page, limit };
   }
 
   async findAll(
-    limit: number,
+    limitParam?: number,  // Cambiado a opcional
+    pageParam?: number,   // Cambiado a opcional
     idType?: number,
     idSubtype?: number,
     idUser?: number,
-    sortField?: string,  // Campo por defecto para ordenar
-    sortOrder?: 'ASC' | 'DESC'  // Dirección por defecto
-  ): Promise<CityPointOfInterest[]> {
+    sortField?: string,
+    sortOrder?: 'ASC' | 'DESC'
+  ): Promise<{ results: CityPointOfInterest[]; total: number; page: number; limit: number; links: { previous: string | null; next: string | null } }> {
+  
+    // Asignar valores por defecto si no se proporcionan
+    const limit = limitParam ? Number(limitParam) : 10;
+    const page = pageParam ? Number(pageParam) : 1;
+  
+    // Validar que limit y page sean números positivos
+    if (isNaN(limit) || limit <= 0) {
+      throw new HttpException('Invalid limit value', HttpStatus.BAD_REQUEST);
+    }
+  
+    if (isNaN(page) || page <= 0) {
+      throw new HttpException('Invalid page value', HttpStatus.BAD_REQUEST);
+    }
+  
     const options: FindManyOptions<CityPointOfInterest> = {
       take: limit,
-      relations: ['type', 'subtype'],  // Cargar relaciones
+      skip: (page - 1) * limit,
+      relations: ['type', 'subtype'],
       where: {},
       order: {
-        [sortField || 'name']: sortOrder || 'DESC',  // Agregar el ordenamiento dinámico
+        [sortField || 'name']: sortOrder || 'DESC',
       },
     };
-
-    // Filtros para relaciones
+  
     if (idType) options.where['type'] = { id: idType };
     if (idSubtype) options.where['subtype'] = { id: idSubtype };
     if (idUser) options.where['idUser'] = idUser;
-
-    let [cityPoints, total] = await this.cityPointOfInterestRepository.findAndCount(options);
-
+  
+    const [cityPoints, total] = await this.cityPointOfInterestRepository.findAndCount(options);
+  
     if (total === 0) {
       throw new HttpException('No content', HttpStatus.NO_CONTENT);
     }
-    return cityPoints
+  
+    // Cálculo de enlaces para paginación
+    const links = {
+      previous: page > 1 ? `/city-point-of-interest?limit=${limit}&page=${page - 1}` : null,
+      next: (page * limit) < total ? `/city-point-of-interest?limit=${limit}&page=${page + 1}` : null,
+    };
+  
+    return { results: cityPoints, total, page, limit, links };
   }
+  
 
-  async findAllWithDeleted() {
-    let res = await this.cityPointOfInterestRepository.find(
-      {
-        withDeleted: true,
-        relations: ['type', 'subtype'],  // Cargar relaciones
-      },
+  async findAllWithDeleted(limit: number = 10, page: number = 1) {
+    const [res, total] = await this.cityPointOfInterestRepository.findAndCount({
+      withDeleted: true,
+      relations: ['type', 'subtype'],
+      take: limit,
+      skip: (page - 1) * limit,
+    });
 
-    )
-    return res
+    return { results: res, total, page, limit };
   }
 
   async findOne(
@@ -95,10 +143,9 @@ export class CityPointOfInterestService {
   ): Promise<CityPointOfInterest> {
     const options: FindManyOptions<CityPointOfInterest> = {
       where: { id },
-      relations: ['type', 'subtype'], // Cargar las relaciones
+      relations: ['type', 'subtype'],
     };
 
-    // Usar los nombres correctos de los campos en la tabla
     if (idType) options.where['typeId'] = idType;
     if (idSubtype) options.where['subtypeId'] = idSubtype;
     if (idUser) options.where['idUser'] = idUser;
@@ -114,27 +161,23 @@ export class CityPointOfInterestService {
 
   async update(id: number, updateCityPointOfInterestDto: UpdateCityPointOfInterestDto, newImages?: string[]): Promise<CityPointOfInterest> {
     const cityPoint = await this.findOne(id);
-  
-    // Validar si se actualizó el nombre y si hay conflicto con otro punto de interés
+
     if (updateCityPointOfInterestDto.name && updateCityPointOfInterestDto.name !== cityPoint.name) {
       const existingCityPoint = await this.cityPointOfInterestRepository.findOne({ where: { name: updateCityPointOfInterestDto.name } });
       if (existingCityPoint) {
         throw new ConflictException(`A city point of interest with the name "${updateCityPointOfInterestDto.name}" already exists`);
       }
     }
-  
-    // Combinar imágenes nuevas con las existentes
+
     let updatedImages = cityPoint.images || [];
-    
+
     if (newImages && newImages.length > 0) {
       updatedImages = [...updatedImages, ...newImages];
     }
-  
-    // Eliminar imágenes si se proporciona `imagesToRemove` en el DTO
+
     if (updateCityPointOfInterestDto.imagesToRemove) {
       updatedImages = updatedImages.filter(image => !updateCityPointOfInterestDto.imagesToRemove.includes(image));
-  
-      // Eliminar las imágenes físicamente del sistema de archivos
+
       for (const imageToRemove of updateCityPointOfInterestDto.imagesToRemove) {
         const imagePath = path.join(process.env.FILE_UPLOADS_DIR, imageToRemove);
         if (fs.existsSync(imagePath)) {
@@ -142,30 +185,22 @@ export class CityPointOfInterestService {
         }
       }
     }
-  
-    // Actualizar la entidad
+
     const updatedData = {
       ...updateCityPointOfInterestDto,
-      images: updatedImages  // Asignar las imágenes combinadas
+      images: updatedImages
     };
-  
+
     await this.cityPointOfInterestRepository.update(id, updatedData);
     return this.cityPointOfInterestRepository.findOne({ where: { id } });
   }
 
-  // async remove(id: number): Promise<void> {
-  //   const result = await this.cityPointOfInterestRepository.delete(id);
-  //   if (result.affected === 0) {
-  //     throw new NotFoundException(`City point of interest with ID ${id} not found`);
-  //   }
-  // }
-
   async remove(id: number) {
-    const eventToDelete = await this.cityPointOfInterestRepository.softDelete(id)
+    const eventToDelete = await this.cityPointOfInterestRepository.softDelete(id);
     if (eventToDelete.affected === 0) {
       throw new NotFoundException('Evento no encontrado');
     } else {
-      return eventToDelete
+      return eventToDelete;
     }
   }
 
