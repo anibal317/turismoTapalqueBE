@@ -23,7 +23,8 @@ async function bootstrap() {
       stopAtFirstError: false
     }));
 
-    let allowedOrigins = configService.get<string>('CORS_ALLOWED_ORIGINS')?.split(',');
+    const corsAllowedOrigins = configService.get('CORS_ALLOWED_ORIGINS');
+    let allowedOrigins = corsAllowedOrigins ? corsAllowedOrigins.split(',') : [];
 
     app.enableCors({
       origin: (origin, callback) => {
