@@ -19,6 +19,5 @@
                 "OPTIONS"
             ]
         }
-    ],
-    "destination": "/api/feedback/:id"
+    ]
 }
