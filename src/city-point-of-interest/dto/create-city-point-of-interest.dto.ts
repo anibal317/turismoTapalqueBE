@@ -1,4 +1,5 @@
-import { IsString, IsNumber, IsOptional, IsArray, IsNotEmpty } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsString, IsNumber, IsOptional, IsArray, IsNotEmpty, IsDate } from 'class-validator';
 
 export class CreateCityPointOfInterestDto {
   @IsString()
@@ -27,4 +28,13 @@ export class CreateCityPointOfInterestDto {
   @IsString()
   @IsOptional()
   address?: string
+ 
+  @IsString()
+  @IsOptional()
+  description?: string
+ 
+  @IsDate()
+  @IsOptional()
+  @Type(() => Date)
+  startDate?: Date
 }
