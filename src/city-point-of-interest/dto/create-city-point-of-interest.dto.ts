@@ -19,4 +19,12 @@ export class CreateCityPointOfInterestDto {
   @IsArray()
   @IsOptional()
   images?: string[];
+
+  @IsOptional()
+  @IsString()
+  contact?: string
+
+  @IsString()
+  @IsOptional()
+  address?: string
 }
