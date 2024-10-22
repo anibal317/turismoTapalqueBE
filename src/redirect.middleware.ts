@@ -5,7 +5,7 @@ import { Request, Response, NextFunction } from 'express';
 export class RedirectMiddleware implements NestMiddleware {
     use(req: Request, res: Response, next: NextFunction) {
         if (req.path === '/') {
-            const redirectUrl = `${req.protocol}://${req.get('host')}/`; // Construir la URL de redirección
+            const redirectUrl = `${req.protocol}://${req.get('host')}`; // Construir la URL de redirección
             return res.redirect(redirectUrl);        }
         next();
     }

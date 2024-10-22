@@ -11,7 +11,7 @@ const common_1 = require("@nestjs/common");
 let RedirectMiddleware = class RedirectMiddleware {
     use(req, res, next) {
         if (req.path === '/') {
-            const redirectUrl = `${req.protocol}://${req.get('host')}/`;
+            const redirectUrl = `${req.protocol}://${req.get('host')}`;
             return res.redirect(redirectUrl);
         }
         next();
