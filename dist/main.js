@@ -14,7 +14,8 @@ async function bootstrap() {
         whitelist: true,
         forbidNonWhitelisted: true,
         transform: true,
-        stopAtFirstError: false
+        stopAtFirstError: true,
+        exceptionFactory: (errors) => new common_1.BadRequestException(errors),
     }));
     let allowedOrigins = configService.get('CORS_ALLOWED_ORIGINS')?.split(',');
     app.enableCors({

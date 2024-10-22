@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RedirectMiddleware } from './redirect.middleware';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -18,7 +18,8 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      stopAtFirstError: false
+      stopAtFirstError: true,
+      exceptionFactory: (errors) => new BadRequestException(errors),
     }
   ))
 
@@ -59,19 +60,19 @@ async function bootstrap() {
         in: 'Header'
       }, 'access-token')
       .build();
-  
+
     const document = SwaggerModule.createDocument(app, config, {
       extraModels: [],
       ignoreGlobalPrefix: true,
       deepScanRoutes: true,
     });
-  
+
     // Eliminar todos los schemas del documento
     document.components.schemas = {};
-  
+
     // Eliminar el endpoint principal
     delete document.paths['/'];
-  
+
     const theme = new SwaggerTheme();
     const options = {
       explorer: true,
@@ -82,7 +83,7 @@ async function bootstrap() {
         tagsSorter: 'alpha',
       },
     };
-  
+
     SwaggerModule.setup('/docs', app, document, options);
   }
 
