@@ -4,6 +4,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppService } from "./app.service";
 import { ConfigModule } from '@nestjs/config';
 import { MoviesModule } from './movies/movies.module';
+import { CityPointOfInterestModule } from './city-point-of-interest/city-point-of-interest.module';
+import { TypeEntityModule } from './type-entity/type-entity.module';
+import { SubtypeEntityModule } from './subtype-entity/subtype-entity.module';
+import { UserModule } from './user/user.module';
+import { SentEmailsModule } from './emails/emails.module';
+import { MailerCustomModule } from './mailer/mailer.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -21,6 +28,13 @@ import { MoviesModule } from './movies/movies.module';
       synchronize: true
     }),
     MoviesModule,
+    CityPointOfInterestModule,
+    TypeEntityModule,
+    SubtypeEntityModule,
+    UserModule,
+    AuthModule,
+    MailerCustomModule,
+    SentEmailsModule
     // ... otros módulos
   ],
   controllers: [AppController],
