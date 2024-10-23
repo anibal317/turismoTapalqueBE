@@ -21,8 +21,8 @@
         }
     ],
     "functions": {
-    "api/**/*": {
-      "includeFiles": "src/templates/**"
+        "api/**/*": {
+            "includeFiles": "templates/**"
+        }
     }
-  }
 }

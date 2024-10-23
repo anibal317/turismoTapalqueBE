@@ -5,14 +5,14 @@ import { ConfigService } from '@nestjs/config';
 import { RedirectMiddleware } from './redirect.middleware';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { SwaggerTheme, SwaggerThemeNameEnum } from 'swagger-themes';
-import { join } from 'path';
-import { NestExpressApplication } from '@nestjs/platform-express';
+import { StaticFilesMiddleware } from './static.middleware'; 
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  app.useStaticAssets(join(__dirname, '..', 'public'));
+ // Registra el middleware antes de todas las rutas
+ app.use('/templates', new StaticFilesMiddleware().use);
 
   app.useGlobalPipes(new ValidationPipe(
     {
