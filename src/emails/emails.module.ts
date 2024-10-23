@@ -17,11 +17,12 @@ import { EmailController } from './email.controller';
           port: 465, // Replace with 587 if Hostinger uses that port
           secure: true,
           auth: {
-            user: configService.get('SMTP_USER'),
-            pass: 'N5j&&Uerbnn'
+            user: 'noresponder@tapalque.tur.ar ', // You shouldn't store password directly in code
+            pass: 'N5j&&Uerbnn' // Remove for security reasons
           },
           type: 'PLAIN', // Or 'LOGIN', 'CRAM-MD5', etc. depending on Hostinger's requirement
         },
+        logger: true,
         tls: {
           rejectUnauthorized: false // Set to true if you trust Hostinger's SSL certificate
         },
