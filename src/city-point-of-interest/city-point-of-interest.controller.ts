@@ -173,5 +173,4 @@ export class CityPointOfInterestController {
   async remove(@Param('id') id: string) {
     return await this.cityPointOfInterestService.remove(+id);
   }
-
 }
