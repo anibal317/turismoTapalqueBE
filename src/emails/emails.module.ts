@@ -13,12 +13,12 @@ import { EmailController } from './email.controller';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         transport: {
-          host: process.env.SMTP_HOST,
-          port: process.env.SMTP_PORT,
-          secure: process.env.SMTP_PORT,
+          host: configService.get('SMTP_HOST'), // Access Secret using ConfigService
+          port: configService.get('SMTP_PORT'),
+          secure: configService.get('SMTP_PORT'),
           auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
+            user: configService.get('SMTP_USER'),
+            pass: configService.get('SMTP_PASS'),
           },
         },
         defaults: {
