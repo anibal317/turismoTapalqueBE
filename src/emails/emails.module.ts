@@ -18,7 +18,7 @@ import { EmailController } from './email.controller';
           secure: true,
           auth: {
             user: configService.get('SMTP_USER'),
-            // Password should be retrieved from environment variables or a secret manager
+            pass: 's3cr3ta'
           },
           type: 'PLAIN', // Or 'LOGIN', 'CRAM-MD5', etc. depending on Hostinger's requirement
         },
