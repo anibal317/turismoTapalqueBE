@@ -17,6 +17,7 @@ import { EmailModule } from './emails/emails.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true, // Hace que ConfigModule esté disponible en toda la aplicación
+      envFilePath: '.env',
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',

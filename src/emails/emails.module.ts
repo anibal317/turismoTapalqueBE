@@ -7,13 +7,13 @@ import { EmailController } from './email.controller';
 @Module({
   imports: [
     MailerModule.forRootAsync({
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: async () => ({
         transport: {
-          host: 'smtp.hostinger.com',
-          port: '465',
+          host: process.env.SMTP_HOST,
+          port: process.env.SMTP_PORT,
           auth: {
-            user: 'noresponder@tapalque.tur.ar',
-            pass: 'N5j&&Uerbnn',
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
           },
         },
         defaults: {
