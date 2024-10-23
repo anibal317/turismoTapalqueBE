@@ -23,7 +23,7 @@ export class FacilitiesService {
 
   async findAll() {
     try {
-      const types = await this.facilityRepository.find({ relations: ['users', 'subtype', 'cityPoints'] });
+      const types = await this.facilityRepository.find();
       if (types.length === 0) {
         throw new HttpException('No Type Entities found', HttpStatus.NO_CONTENT);
       }
