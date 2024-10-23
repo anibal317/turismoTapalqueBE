@@ -9,11 +9,11 @@ import { EmailController } from './email.controller';
     MailerModule.forRootAsync({
       useFactory: async (configService: ConfigService) => ({
         transport: {
-          host: configService.get('SMTP_HOST'),
-          port: configService.get('SMTP_PORT'),
+          host: 'smtp.hostinger.com',
+          port: '465',
           auth: {
-            user: configService.get('SMTP_USER'),
-            pass: configService.get('SMTP_PASS'),
+            user: 'noresponder@tapalque.tur.ar',
+            pass: 'N5j&&Uerbnn',
           },
         },
         defaults: {
