@@ -1,8 +1,8 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
-import * as hbs from 'hbs';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as Handlebars from 'handlebars';
 
 @Injectable()
 export class EmailService {
@@ -33,7 +33,8 @@ export class EmailService {
       throw new BadRequestException('Template no encontrado');
     }
 
-    const template = hbs.compile(fs.readFileSync(templatePath, 'utf8'));
+    const templateContent = fs.readFileSync(templatePath, 'utf8');
+    const template = Handlebars.compile(templateContent);
     const html = template(context);
 
     await this.mailerService.sendMail({
