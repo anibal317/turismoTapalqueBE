@@ -9,7 +9,7 @@ import { UserRole } from '../common/decorators/user-role.enum';
 
 @ApiTags('User')  // Agrupar este controlador bajo la etiqueta 'User' en Swagger
 @Controller('user')
-// @UseGuards(AuthGuard('jwt'))  // Puedes habilitar la autenticación según sea necesario
+@UseGuards(AuthGuard('jwt'))  // Puedes habilitar la autenticación según sea necesario
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

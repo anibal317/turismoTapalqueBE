@@ -3,7 +3,6 @@ import { AppController } from './app.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppService } from "./app.service";
 import { ConfigModule } from '@nestjs/config';
-import { MoviesModule } from './movies/movies.module';
 import { CityPointOfInterestModule } from './city-point-of-interest/city-point-of-interest.module';
 import { TypeEntityModule } from './type-entity/type-entity.module';
 import { SubtypeEntityModule } from './subtype-entity/subtype-entity.module';
@@ -31,7 +30,6 @@ import { FacilitiesModule } from './facilities/facilities.module';
       synchronize: true,
       logging:true
     }),
-    MoviesModule,
     CityPointOfInterestModule,
     TypeEntityModule,
     SubtypeEntityModule,

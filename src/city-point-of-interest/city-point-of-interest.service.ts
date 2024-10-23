@@ -4,9 +4,6 @@ import { Repository, FindManyOptions, IsNull, Not } from 'typeorm';
 import { CreateCityPointOfInterestDto } from './dto/create-city-point-of-interest.dto';
 import { UpdateCityPointOfInterestDto } from './dto/update-city-point-of-interest.dto';
 import { CityPointOfInterest } from './entities/city-point-of-interest.entity';
-// import { TypeEntity } from '../type-entity/entities/type-entity.entity';
-// import { SubtypeEntity } from '../subtype-entity/entities/subtype-entity.entity';
-// import { User } from '../user/entities/user.entity';
 import * as path from 'path';
 import * as fs from 'fs';
 import { Facility } from 'src/facilities/entities/facility.entity';
@@ -19,12 +16,6 @@ export class CityPointOfInterestService {
 
     @InjectRepository(Facility)
     private facilityRepository: Repository<Facility>,
-
-    // @InjectRepository(SubtypeEntity)
-    // private subtypeRepository: Repository<SubtypeEntity>,
-
-    // @InjectRepository(User)
-    // private readonly userRepository: Repository<User>
   ) { }
 
   async create(createCityPointOfInterestDto: CreateCityPointOfInterestDto): Promise<CityPointOfInterest> {

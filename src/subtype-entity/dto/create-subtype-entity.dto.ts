@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator"
+import {  IsNotEmpty, IsOptional, IsString } from "class-validator"
 import { TypeEntity } from "../../type-entity/entities/type-entity.entity";
 
 export class CreateSubtypeEntityDto {

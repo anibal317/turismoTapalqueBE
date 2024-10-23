@@ -1,5 +1,4 @@
-import { IsNumber, IsString, IsOptional, IsEnum } from "class-validator"
-import { Column } from "typeorm";
+import { IsString, IsOptional, IsEnum } from "class-validator"
 import { UserRole } from "../../common/decorators/user-role.enum";
 
 export class CreateTypeEntityDto {
