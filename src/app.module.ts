@@ -12,6 +12,7 @@ import { AuthModule } from './auth/auth.module';
 import { MailerCustomModule } from './mailer/mailer.module';
 import { RolesGuard } from './common/guards/roles.guard';
 import { EmailModule } from './emails/emails.module';
+import { FacilitiesModule } from './facilities/facilities.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { EmailModule } from './emails/emails.module';
     AuthModule,
     MailerCustomModule,
     EmailModule,
+    FacilitiesModule,
     
   ],
   controllers: [AppController],

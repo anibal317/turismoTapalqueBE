@@ -35,6 +35,13 @@ export class CityPointOfInterestController {
         typeId: { type: 'number', example: 1 },
         subtypeId: { type: 'number', example: 2 },
         idUser: { type: 'number', example: 1 },
+        facilities: {
+          type: 'array',
+          items: {
+            type: 'number',
+          },
+          example: [1, 2, 3],  // Lista de IDs de facilities
+        },
         images: {
           type: 'array',
           items: {
@@ -65,19 +72,25 @@ export class CityPointOfInterestController {
   )
   async create(
     @UploadedFiles() files: Express.Multer.File[],
-    @Body('typeId', ParseIntPipe) typeId: number,  // Usamos ParseIntPipe
-    @Body('subtypeId', ParseIntPipe) subtypeId: number,  // Usamos ParseIntPipe
-    @Body('idUser', ParseIntPipe) idUser: number,  // Usamos ParseIntPipe
+    @Body('typeId', ParseIntPipe) typeId: number,
+    @Body('subtypeId', ParseIntPipe) subtypeId: number,
+    @Body('idUser', ParseIntPipe) idUser: number,
     @Body() createCityPointDto: CreateCityPointOfInterestDto
   ) {
     const uploadedFiles = files ? files.map(file => `/uploads/citypoints/${file.filename}`) : [];
+    
+    // Agregar facilities al DTO si existen
+    const facilities = createCityPointDto.facilities ? createCityPointDto.facilities : [];
+  
     const cityPointDto = {
       ...createCityPointDto,
       typeId,
       subtypeId,
       idUser,
-      images: uploadedFiles.length > 0 ? uploadedFiles : createCityPointDto.images || []
+      images: uploadedFiles.length > 0 ? uploadedFiles : createCityPointDto.images || [],
+      facilities,  // Incluir facilities en el DTO
     };
+  
     return this.cityPointOfInterestService.create(cityPointDto);
   }
 

@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsString, IsNumber, IsOptional, IsArray, IsNotEmpty, IsDate } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsArray, IsNotEmpty, IsDate, ArrayNotEmpty } from 'class-validator';
 
 export class CreateCityPointOfInterestDto {
   @IsString()
@@ -47,4 +47,10 @@ export class CreateCityPointOfInterestDto {
   @IsOptional()
   @Type(() => Date)
   startDate?: Date
+
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsNumber({}, { each: true })  // Asegurarse de que cada elemento del array sea un número
+  @IsOptional()
+  facilities?: number[];  // IDs de instalaciones (facilities)
 }

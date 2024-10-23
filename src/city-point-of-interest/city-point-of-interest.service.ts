@@ -9,6 +9,7 @@ import { CityPointOfInterest } from './entities/city-point-of-interest.entity';
 // import { User } from '../user/entities/user.entity';
 import * as path from 'path';
 import * as fs from 'fs';
+import { Facility } from 'src/facilities/entities/facility.entity';
 
 @Injectable()
 export class CityPointOfInterestService {
@@ -16,8 +17,8 @@ export class CityPointOfInterestService {
     @InjectRepository(CityPointOfInterest)
     private cityPointOfInterestRepository: Repository<CityPointOfInterest>,
 
-    // @InjectRepository(TypeEntity)
-    // private typeRepository: Repository<TypeEntity>,
+    @InjectRepository(Facility)
+    private facilityRepository: Repository<Facility>,
 
     // @InjectRepository(SubtypeEntity)
     // private subtypeRepository: Repository<SubtypeEntity>,
@@ -27,9 +28,8 @@ export class CityPointOfInterestService {
   ) { }
 
   async create(createCityPointOfInterestDto: CreateCityPointOfInterestDto): Promise<CityPointOfInterest> {
-    console.log(createCityPointOfInterestDto)
-    
-    const { name, typeId, subtypeId, idUser, images } = createCityPointOfInterestDto;
+  
+    const { name, typeId, subtypeId, idUser, images, facilities } = createCityPointOfInterestDto;
   
     if (!typeId || !subtypeId || !idUser) {
       throw new HttpException('TypeId, SubtypeId, and IdUser are required', HttpStatus.BAD_REQUEST);
@@ -62,15 +62,28 @@ export class CityPointOfInterestService {
       throw new NotFoundException(`User with ID ${idUser} not found`);
     }
   
+    // Manejo de la relación de muchos a muchos con las facilities (instalaciones)
+    let facilitiesEntities = [];
+    if (facilities && facilities.length > 0) {
+      // Verificar si los facilities existen en la base de datos
+      facilitiesEntities = await this.facilityRepository.findByIds(facilities);
+      
+      if (facilitiesEntities.length !== facilities.length) {
+        throw new NotFoundException(`One or more facilities not found`);
+      }
+    }
+  
     // Crear el nuevo punto de interés
     const imagesArray = Array.isArray(images) ? images : [];
     const newCityPoint = this.cityPointOfInterestRepository.create({
       ...createCityPointOfInterestDto,
       images: imagesArray,
+      facilities: facilitiesEntities,  // Asociar las instalaciones (facilities)
     });
   
     return this.cityPointOfInterestRepository.save(newCityPoint);
   }
+  
   
   async findDeleted(limit: number = 10, page: number = 1) {
     const [results, total] = await this.cityPointOfInterestRepository.findAndCount({
@@ -189,23 +202,23 @@ export class CityPointOfInterestService {
 
   async update(id: number, updateCityPointOfInterestDto: UpdateCityPointOfInterestDto, newImages?: string[]): Promise<CityPointOfInterest> {
     const cityPoint = await this.findOne(id);
-
+  
     if (updateCityPointOfInterestDto.name && updateCityPointOfInterestDto.name !== cityPoint.name) {
       const existingCityPoint = await this.cityPointOfInterestRepository.findOne({ where: { name: updateCityPointOfInterestDto.name } });
       if (existingCityPoint) {
         throw new ConflictException(`A city point of interest with the name "${updateCityPointOfInterestDto.name}" already exists`);
       }
     }
-
+  
+    // Manejo de las imágenes
     let updatedImages = cityPoint.images || [];
-
     if (newImages && newImages.length > 0) {
       updatedImages = [...updatedImages, ...newImages];
     }
-
+  
     if (updateCityPointOfInterestDto.imagesToRemove) {
       updatedImages = updatedImages.filter(image => !updateCityPointOfInterestDto.imagesToRemove.includes(image));
-
+  
       for (const imageToRemove of updateCityPointOfInterestDto.imagesToRemove) {
         const imagePath = path.join(process.env.FILE_UPLOADS_DIR, imageToRemove);
         if (fs.existsSync(imagePath)) {
@@ -213,12 +226,25 @@ export class CityPointOfInterestService {
         }
       }
     }
-
+  
+    // Manejo de la relación de muchos a muchos con facilities
+    let facilitiesEntities = cityPoint.facilities || [];
+    if (updateCityPointOfInterestDto.facilities && updateCityPointOfInterestDto.facilities.length > 0) {
+      // Verificar si las facilities existen en la base de datos
+      facilitiesEntities = await this.facilityRepository.findByIds(updateCityPointOfInterestDto.facilities);
+      
+      if (facilitiesEntities.length !== updateCityPointOfInterestDto.facilities.length) {
+        throw new NotFoundException(`One or more facilities not found`);
+      }
+    }
+  
+    // Actualizar los datos del CityPoint
     const updatedData = {
       ...updateCityPointOfInterestDto,
-      images: updatedImages
+      images: updatedImages,
+      facilities: facilitiesEntities // Actualizar la relación con las facilities
     };
-
+  
     await this.cityPointOfInterestRepository.update(id, updatedData);
     return this.cityPointOfInterestRepository.findOne({ where: { id } });
   }
