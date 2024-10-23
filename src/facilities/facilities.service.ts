@@ -4,10 +4,14 @@ import { UpdateFacilityDto } from './dto/update-facility.dto';
 import { Facility } from './entities/facility.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CityPointOfInterest } from 'src/city-point-of-interest/entities/city-point-of-interest.entity';
 
 @Injectable()
 export class FacilitiesService {
   constructor(
+    @InjectRepository(CityPointOfInterest)
+    private readonly cityPointOfInterestRepository: Repository<CityPointOfInterest>,
+
     @InjectRepository(Facility)
     private facilityRepository: Repository<Facility>,
   ) {}
