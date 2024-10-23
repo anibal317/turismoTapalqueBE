@@ -117,7 +117,7 @@ export class CityPointOfInterestService {
     const options: FindManyOptions<CityPointOfInterest> = {
       take: limit,
       skip: (page - 1) * limit,
-      relations: ['type', 'subtype'],
+      relations: ['type', 'subtype', 'facilities'],
       where: {},
       order: {
         [sortField || 'name']: sortOrder || 'DESC',
@@ -147,7 +147,7 @@ export class CityPointOfInterestService {
   async findAllWithDeleted(limit: number = 10, page: number = 1) {
     const [res, total] = await this.cityPointOfInterestRepository.findAndCount({
       withDeleted: true,
-      relations: ['type', 'subtype'],
+      relations: ['type', 'subtype', 'facilities'],
       take: limit,
       skip: (page - 1) * limit,
     });
