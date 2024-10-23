@@ -21,15 +21,15 @@ import { EmailController } from './email.controller';
             pass: 'N5j&&Uerbnn' // Remove for security reasons
           },
           type: 'CRAM-MD5',
-          debug:true,
         },
+        debug:true,
         logger: true,
-        tls: {
-          rejectUnauthorized: false // Set to true if you trust Hostinger's SSL certificate
-        },
-        defaults: {
-          from: '"No Reply" <noreply@example.com>',
-        },
+        // tls: {
+        //   rejectUnauthorized: false // Set to true if you trust Hostinger's SSL certificate
+        // },
+        // defaults: {
+        //   from: '"No Reply" <noreply@example.com>',
+        // },
       }),
       inject: [ConfigService],
     }),
