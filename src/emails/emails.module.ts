@@ -13,17 +13,17 @@ import { EmailController } from './email.controller';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         transport: {
-          host: configService.get('SMTP_HOST'), // Access Secret using ConfigService
-          port: configService.get('SMTP_PORT'),
-          secure: configService.get('SMTP_PORT'),
+          host: configService.get('SMTP_HOST'),
+          port: 465, // Replace with 587 if Hostinger uses that port
+          secure: true,
           auth: {
             user: configService.get('SMTP_USER'),
-            pass: 's3cr3ta',
-            type: 'PLAIN' // Or 'LOGIN', 'CRAM-MD5', etc. depending on your SMTP server
+            // Password should be retrieved from environment variables or a secret manager
           },
+          type: 'PLAIN', // Or 'LOGIN', 'CRAM-MD5', etc. depending on Hostinger's requirement
         },
         tls: {
-          rejectUnauthorized: false // Si tienes problemas con los certificados SSL
+          rejectUnauthorized: false // Set to true if you trust Hostinger's SSL certificate
         },
         defaults: {
           from: '"No Reply" <noreply@example.com>',
