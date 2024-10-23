@@ -19,5 +19,10 @@
                 "OPTIONS"
             ]
         }
-    ]
+    ],
+    "functions": {
+    "api/**/*": {
+      "includeFiles": "src/templates/**"
+    }
+  }
 }
