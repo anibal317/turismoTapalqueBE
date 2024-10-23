@@ -20,7 +20,7 @@ import { EmailController } from './email.controller';
             user: 'noresponder@tapalque.tur.ar ', // You shouldn't store password directly in code
             pass: 'N5j&&Uerbnn' // Remove for security reasons
           },
-          type: 'PLAIN', // Or 'LOGIN', 'CRAM-MD5', etc. depending on Hostinger's requirement
+          type: 'LOGIN'
         },
         logger: true,
         tls: {
