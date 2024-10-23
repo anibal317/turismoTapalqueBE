@@ -17,6 +17,16 @@ export class CreateCityPointOfInterestDto {
   @IsNotEmpty()
   idUser: number;
 
+  @IsNumber()
+  @IsNotEmpty()
+  @IsOptional()
+  stars: number;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  places: number;
+
   @IsArray()
   @IsOptional()
   images?: string[];

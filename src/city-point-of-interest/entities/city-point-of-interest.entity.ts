@@ -34,6 +34,12 @@ export class CityPointOfInterest {
 
     @Column({ nullable: true, default: "-" })
     description: string;
+    
+    @Column({ nullable: true, default: "0" })
+    stars: number;
+
+    @Column({ nullable: true, default: "0" })
+    places: number;
 
     @Column({ nullable: true })
     startDate: Date;
