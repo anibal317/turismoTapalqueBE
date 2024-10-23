@@ -12,26 +12,23 @@ export class EmailService {
   async sendTemplateEmail(
     email: string, 
     templateName: string, 
-    context: any,      // Contexto dinámico para variables del template
-    subject?: string   // Asunto dinámico, opcional
+    context: any, 
+    subject?: string 
   ) {
-    // Ruta dinámica del template
-    const templatePath = `${templateName}.hbs`;
+    // Ruta dinámica del template usando ruta absoluta
+    const templatePath = path.join(__dirname, '..', 'templates', `${templateName}.hbs`);
     
-    // Verificación de la existencia del template
     if (!fs.existsSync(templatePath)) {
       throw new BadRequestException('Template no encontrado');
     }
 
-    // Compilación del template con Handlebars
     const template = hbs.compile(fs.readFileSync(templatePath, 'utf8'));
-    const html = template(context);  // Renderizado del template con el contexto dinámico
+    const html = template(context);
 
-    // Enviar correo usando el mailer service
     await this.mailerService.sendMail({
       to: email,
-      subject: subject || 'Asunto predeterminado', // Asunto dinámico si es proporcionado
-      html,  // El contenido renderizado con las variables inyectadas
+      subject: subject || 'Asunto predeterminado',
+      html,
     });
   }
 }

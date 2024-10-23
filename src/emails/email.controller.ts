@@ -17,8 +17,8 @@ export class EmailController {
       example1: {  // Proveer un ejemplo para que Swagger lo muestre
         summary: 'Ejemplo de envío de correo',
         value: {
-          email: 'anibal317@gmail.com',
-          templateName: 'test',
+          email: 'tu@email.com',
+          templateName: 'template_name',
           subject: 'Restablecimiento de contraseña',
           context: {
             name: 'Mi Nombre',
