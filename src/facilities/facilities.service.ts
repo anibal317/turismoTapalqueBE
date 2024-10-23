@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateFacilityDto } from './dto/create-facility.dto';
 import { UpdateFacilityDto } from './dto/update-facility.dto';
 import { Facility } from './entities/facility.entity';
@@ -75,10 +75,19 @@ export class FacilitiesService {
     }
 
     try {
-      await this.facilityRepository.delete(id);
+      await this.facilityRepository.softDelete(id);
       return { message: 'Type Entity deleted successfully' };
     } catch (error) {
       throw new HttpException(`Error deleting Type Entity: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  async restore(id: number) {
+    const result = await this.facilityRepository.restore(id);
+    if (result.affected === 0) {
+      throw new NotFoundException('Punto de interes no encontrado');
+    }
+
+    return await this.facilityRepository.findOne({ where: { id: id } });
   }
 }
