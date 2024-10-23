@@ -37,7 +37,8 @@ import { RolesGuard } from './common/guards/roles.guard';
     UserModule,
     AuthModule,
     MailerCustomModule,
-    SentEmailsModule
+    SentEmailsModule,
+    
   ],
   controllers: [AppController],
   providers: [AppService, RolesGuard],
