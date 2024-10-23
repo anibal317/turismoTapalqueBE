@@ -20,7 +20,8 @@ export class EmailService {
     this.logger.log(`SMTP_HOST: ${this.configService.get('SMTP_HOST')}`);
     this.logger.log(`SMTP_PORT: ${this.configService.get('SMTP_PORT')}`);
     this.logger.log(`SMTP_USER: ${this.configService.get('SMTP_USER')}`);
-    // No logueamos la contraseña por razones de seguridad
+    this.logger.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+    this.logger.log(`Current working directory: ${process.cwd()}`);
   }
 
   async sendTemplateEmail(
@@ -30,23 +31,28 @@ export class EmailService {
     subject?: string 
   ) {
     try {
-      const templatePath = this.findTemplatePath(templateName);
-      const html = this.compileTemplate(templatePath, context);
+      const templatePath = await this.findTemplatePath(templateName);
+      const html = await this.compileTemplate(templatePath, context);
 
-      await this.mailerService.sendMail({
+      this.logger.log(`Attempting to send email to ${email}`);
+      
+      const result = await this.mailerService.sendMail({
         to: email,
         subject: subject || 'Asunto predeterminado',
         html,
       });
 
-      this.logger.log(`Email enviado exitosamente a ${email} usando la plantilla ${templateName}`);
+      this.logger.log(`Email sent successfully. Message ID: ${result.messageId}`);
     } catch (error) {
-      this.logger.error(`Error al enviar email: ${error.message}`, error.stack);
+      this.logger.error(`Failed to send email: ${error.message}`, error.stack);
+      if (error.response) {
+        this.logger.error(`SMTP Response: ${JSON.stringify(error.response)}`);
+      }
       throw new BadRequestException(`Error al enviar email: ${error.message}`);
     }
   }
 
-  private findTemplatePath(templateName: string): string {
+  private async findTemplatePath(templateName: string): Promise<string> {
     const possiblePaths = [
       path.join(process.cwd(), 'src', 'templates', `${templateName}.hbs`),
       path.join(process.cwd(), 'dist', 'templates', `${templateName}.hbs`),
@@ -55,24 +61,34 @@ export class EmailService {
     ];
 
     for (const path of possiblePaths) {
-      if (fs.existsSync(path)) {
-        this.logger.log(`Plantilla encontrada en: ${path}`);
+      this.logger.log(`Checking for template at: ${path}`);
+      if (await this.fileExists(path)) {
+        this.logger.log(`Template found at: ${path}`);
         return path;
       }
     }
 
-    this.logger.error(`Plantilla no encontrada: ${templateName}`);
-    throw new BadRequestException(`Plantilla no encontrada: ${templateName}`);
+    this.logger.error(`Template not found: ${templateName}`);
+    throw new BadRequestException(`Template not found: ${templateName}`);
   }
 
-  private compileTemplate(templatePath: string, context: any): string {
+  private async fileExists(filePath: string): Promise<boolean> {
     try {
-      const templateContent = fs.readFileSync(templatePath, 'utf8');
+      await fs.promises.access(filePath, fs.constants.F_OK);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private async compileTemplate(templatePath: string, context: any): Promise<string> {
+    try {
+      const templateContent = await fs.promises.readFile(templatePath, 'utf8');
       const template = Handlebars.compile(templateContent);
       return template(context);
     } catch (error) {
-      this.logger.error(`Error al compilar la plantilla: ${error.message}`, error.stack);
-      throw new BadRequestException(`Error al compilar la plantilla: ${error.message}`);
+      this.logger.error(`Error compiling template: ${error.message}`, error.stack);
+      throw new BadRequestException(`Error compiling template: ${error.message}`);
     }
   }
 }

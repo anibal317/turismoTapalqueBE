@@ -6,8 +6,10 @@ import { RedirectMiddleware } from './redirect.middleware';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { SwaggerTheme, SwaggerThemeNameEnum } from 'swagger-themes';
 import { StaticFilesMiddleware } from './static.middleware'; 
+import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
@@ -89,7 +91,9 @@ async function bootstrap() {
   }
 
   Swagger();
-  await app.listen(3001);
+  const port = process.env.PORT || 3001;
+  await app.listen(port);
   console.log('http://localhost:3001')
+  logger.log(`Application is running on: http://localhost:${port}`);
 }
 bootstrap();
