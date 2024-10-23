@@ -7,11 +7,11 @@ import { UpdateSubtypeEntityDto } from './dto/update-subtype-entity.dto';
 @ApiTags('Subtypes')  // Agrupar este controlador bajo la etiqueta 'Subtypes' en Swagger
 @Controller('subtypes')
 export class SubtypeEntityController {
-  constructor(private readonly subtypeService: SubtypeEntityService) {}
+  constructor(private readonly subtypeService: SubtypeEntityService) { }
 
   @Post()
   @ApiOperation({ summary: 'Crear un nuevo subtipo' })
-  @ApiBody({ 
+  @ApiBody({
     type: CreateSubtypeEntityDto,  // Definir el cuerpo del POST
     description: 'Datos para crear un subtipo',
     examples: {
@@ -28,8 +28,8 @@ export class SubtypeEntityController {
   @ApiResponse({ status: 201, description: 'Subtipo creado correctamente' })
   @ApiResponse({ status: 400, description: 'Error al crear subtipo' })
   async create(@Body() createSubtypeEntityDto: CreateSubtypeEntityDto) {
-    const { name, description, type } = createSubtypeEntityDto;
-    return this.subtypeService.create(name, description, type.id);
+    const { name, description, type, facilityIds } = createSubtypeEntityDto;
+    return this.subtypeService.create(name, description, type.id, facilityIds || []);
   }
 
   @Get()
@@ -40,9 +40,9 @@ export class SubtypeEntityController {
   @ApiQuery({ name: 'limit', required: false, description: 'Cantidad de resultados a devolver' })
   @ApiResponse({ status: 200, description: 'Lista de subtipos obtenida correctamente' })
   async findAll(
-    @Query('typeId') typeId?: number, 
-    @Query('sortField') sortField?: string,  
-    @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',  
+    @Query('typeId') typeId?: number,
+    @Query('sortField') sortField?: string,
+    @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
     @Query('limit') limit?: number
   ) {
     return this.subtypeService.findAll(typeId, sortField, sortOrder, limit);
@@ -60,8 +60,8 @@ export class SubtypeEntityController {
   @Put(':id')
   @ApiOperation({ summary: 'Actualizar un subtipo por su ID' })
   @ApiParam({ name: 'id', description: 'ID del subtipo a actualizar' })
-  @ApiBody({ 
-    type: UpdateSubtypeEntityDto, 
+  @ApiBody({
+    type: UpdateSubtypeEntityDto,
     description: 'Datos para actualizar un subtipo',
     examples: {
       example1: {
@@ -77,8 +77,9 @@ export class SubtypeEntityController {
   @ApiResponse({ status: 200, description: 'Subtipo actualizado correctamente' })
   @ApiResponse({ status: 400, description: 'Error al actualizar subtipo' })
   async update(@Param('id') id: number, @Body() updateSubtypeEntityDto: UpdateSubtypeEntityDto) {
-    const { name, description, type } = updateSubtypeEntityDto;
-    return this.subtypeService.update(id, name, description, type?.id);
+    const { name, description, type, facilityIds } = updateSubtypeEntityDto;
+
+    return this.subtypeService.update(id, name, description, type?.id, facilityIds);
   }
 
   @Delete(':id')

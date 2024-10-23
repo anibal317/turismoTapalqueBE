@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from "class-validator"
+import { ArrayNotEmpty, IsArray, IsNumber, IsOptional, IsString } from "class-validator"
 
 export class CreateFacilityDto {
     @IsString()
@@ -8,4 +8,8 @@ export class CreateFacilityDto {
     @IsOptional()
     description?: string
 
+    @IsArray()
+    @ArrayNotEmpty()
+    @IsNumber({}, { each: true })
+    subtypeIds: number[]; 
 }

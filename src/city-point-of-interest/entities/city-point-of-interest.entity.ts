@@ -1,6 +1,7 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn, JoinColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn, JoinColumn, ManyToMany } from "typeorm";
 import { TypeEntity } from "../../type-entity/entities/type-entity.entity";
 import { SubtypeEntity } from "../../subtype-entity/entities/subtype-entity.entity";
+import { Facility } from "src/facilities/entities/facility.entity";
 
 @Entity("citypoints")
 export class CityPointOfInterest {
@@ -34,7 +35,7 @@ export class CityPointOfInterest {
 
     @Column({ nullable: true, default: "-" })
     description: string;
-    
+
     @Column({ nullable: true, default: "0" })
     stars: number;
 
@@ -58,10 +59,14 @@ export class CityPointOfInterest {
 
     @CreateDateColumn()
     createAt: Date;
-    
+
     @UpdateDateColumn()
     updateAt: Date;
 
     @DeleteDateColumn()
     deletedAt: Date;
+
+    // Relación many-to-many con Facility
+    @ManyToMany(() => Facility, facility => facility.cityPoints)
+    facilities: Facility[];
 }

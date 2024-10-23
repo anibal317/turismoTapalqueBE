@@ -4,6 +4,8 @@ import { UpdateFacilityDto } from './dto/update-facility.dto';
 import { Facility } from './entities/facility.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { SubtypeEntity } from 'src/subtype-entity/entities/subtype-entity.entity';
+import { TypeEntity } from 'src/type-entity/entities/type-entity.entity';
 
 @Injectable()
 export class FacilitiesService {
@@ -11,14 +13,28 @@ export class FacilitiesService {
   constructor(
     @InjectRepository(Facility)
     private readonly facilityRepository: Repository<Facility>,
+
+    @InjectRepository(SubtypeEntity)
+    private readonly subtypeRepository: Repository<SubtypeEntity>,
+
+    @InjectRepository(TypeEntity)
+    private readonly typeRepository: Repository<TypeEntity>,
   ) { }
 
   async create(createFacilityDto: CreateFacilityDto) {
-    try {
-      return await this.facilityRepository.save(createFacilityDto);
-    } catch (error) {
-      throw new HttpException(`Error creating Type Entity: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+    const { subtypeIds } = createFacilityDto;
+  
+    const subtypes = await this.subtypeRepository.findByIds(subtypeIds);
+    if (subtypes.length !== subtypeIds.length) {
+      throw new NotFoundException('Some subtypes not found');
     }
+  
+    const newFacility = this.facilityRepository.create({
+      ...createFacilityDto,
+      subtypes: subtypes, // Relación con subtypes
+    });
+  
+    return await this.facilityRepository.save(newFacility);
   }
 
   async findAll() {
@@ -46,22 +62,36 @@ export class FacilitiesService {
     return typeEntity;
   }
 
-  async update(id: number, updateFacilityDto: UpdateFacilityDto) {
-    if (!id || isNaN(id)) {
-      throw new HttpException('Invalid ID', HttpStatus.BAD_REQUEST);
+  async update(id: number, name: string, description: string, typeId: number, facilityIds: number[]): Promise<SubtypeEntity> {
+    const subtype = await this.subtypeRepository.findOne({ where: { id } });
+    if (!subtype) {
+      throw new NotFoundException('Subtype not found');
     }
-
-    const typeEntity = await this.facilityRepository.findOne({ where: { id } });
-    if (!typeEntity) {
-      throw new HttpException('Type Entity not found', HttpStatus.NOT_FOUND);
+  
+    // Actualizamos los campos que se envían
+    if (name) {
+      subtype.name = name;
     }
-
-    try {
-      await this.facilityRepository.update(id, updateFacilityDto);
-      return this.findOne(id); // Devuelve la entidad actualizada
-    } catch (error) {
-      throw new HttpException(`Error updating Type Entity: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+    if (description) {
+      subtype.description = description;
     }
+    if (typeId) {
+      const type = await this.typeRepository.findOne({ where: { id: typeId } });
+      if (!type) {
+        throw new NotFoundException('Type not found');
+      }
+      subtype.type = type;
+    }
+  
+    // Asignamos las nuevas facilities si existen
+    if (facilityIds && facilityIds.length > 0) {
+      const facilities = await this.facilityRepository.findByIds(facilityIds);
+      subtype.facilities = facilities;
+    } else {
+      subtype.facilities = [];  // Si no se envían, reseteamos las facilities
+    }
+  
+    return await this.subtypeRepository.save(subtype);
   }
 
   async remove(id: number) {

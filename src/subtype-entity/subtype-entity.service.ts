@@ -1,39 +1,41 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SubtypeEntity } from './entities/subtype-entity.entity';
 import { TypeEntity } from '../type-entity/entities/type-entity.entity';
+import { Facility } from 'src/facilities/entities/facility.entity';
 
 @Injectable()
 export class SubtypeEntityService {
   constructor(
     @InjectRepository(SubtypeEntity)
     private readonly subtypeRepository: Repository<SubtypeEntity>,
+
+    @InjectRepository(Facility)
+    private readonly facilityRepository: Repository<Facility>,
+
     @InjectRepository(TypeEntity)
     private readonly typeRepository: Repository<TypeEntity>,
   ) { }
 
-  async create(name: string, description: string, typeId: number) {
-    // Verificación de duplicados por nombre
-    const existingSubtype = await this.subtypeRepository.findOne({ where: { name } });
-    if (existingSubtype) {
-      throw new HttpException('A subtype with this name already exists', HttpStatus.CONFLICT);
+  async create(name: string, description: string, typeId: number, facilityIds: number[]) {
+    const type = await this.typeRepository.findOne({ where: { id: typeId } });
+    if (!type) {
+      throw new NotFoundException('Type Entity not found');
     }
-
+  
+    const facilities = await this.facilityRepository.findByIds(facilityIds);
+    if (facilities.length !== facilityIds.length) {
+      throw new NotFoundException('Some facilities not found');
+    }
+  
     const subtype = new SubtypeEntity();
     subtype.name = name;
     subtype.description = description || '';
-
-    // Verificación de que el tipo existe
-    const type = await this.typeRepository.findOne({ where: { id: typeId } });
-    if (!type) {
-      throw new HttpException('Type Entity not found', HttpStatus.NOT_FOUND);
-    }
-
     subtype.type = type;
-
-    // Guardar el nuevo subtipo
-    return await this.subtypeRepository.save(subtype);  // Si hay un error inesperado, se lanzará automáticamente.
+    subtype.facilities = facilities; // Relación con facilities
+  
+    return await this.subtypeRepository.save(subtype);
   }
 
   async findAll(
@@ -85,31 +87,29 @@ export class SubtypeEntityService {
     return result;
   }
 
-  async update(id: number, name: string, description: string, typeId: number) {
-    if (!id || isNaN(id)) {
-      throw new HttpException('Invalid ID format', HttpStatus.BAD_REQUEST);
-    }
-
-    const existingSubtype = await this.subtypeRepository.findOne({ where: { id } });
-    if (!existingSubtype) {
-      throw new HttpException('Subtype Entity not found', HttpStatus.NOT_FOUND);
-    }
-
-    existingSubtype.name = name || existingSubtype.name;
-    existingSubtype.description = description || existingSubtype.description;
-
+  async update(id: number, name: string, description: string, typeId: number, facilityIds: number[]) {
+    const subtype = await this.findOne(id);
+  
     if (typeId) {
       const type = await this.typeRepository.findOne({ where: { id: typeId } });
       if (!type) {
-        throw new HttpException('Type Entity not found', HttpStatus.NOT_FOUND);
+        throw new NotFoundException('Type Entity not found');
       }
-      existingSubtype.type = type;
+      subtype.type = type;
     }
-
-    await this.subtypeRepository.save(existingSubtype);
-    return this.findOne(id);
+  
+    const facilities = await this.facilityRepository.findByIds(facilityIds);
+    if (facilities.length !== facilityIds.length) {
+      throw new NotFoundException('Some facilities not found');
+    }
+  
+    subtype.name = name || subtype.name;
+    subtype.description = description || subtype.description;
+    subtype.facilities = facilities; // Relación con facilities
+  
+    await this.subtypeRepository.save(subtype);
+    return this.findOne(id); // Retorna el subtipo actualizado
   }
-
   async remove(id: number) {
     if (!id || isNaN(id)) {
       throw new HttpException('Invalid ID format', HttpStatus.BAD_REQUEST);
