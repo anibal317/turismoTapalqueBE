@@ -1,4 +1,3 @@
-// src/email/email.service.ts
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import * as hbs from 'hbs';
@@ -15,13 +14,22 @@ export class EmailService {
     context: any, 
     subject?: string 
   ) {
-    // Ruta dinámica del template usando ruta absoluta
-    // const templatePath = path.join(process.cwd(), 'src', 'templates', `${templateName}.hbs`);
-    // const templatePath = path.join(process.cwd(), 'public', 'templates', `${templateName}.hbs`);
-    const templatePath = path.join(__dirname, '..', 'templates', `${templateName}.hbs`);
+    let templatePath;
+    const possiblePaths = [
+      path.join(process.cwd(), 'src', 'templates', `${templateName}.hbs`),
+      path.join(process.cwd(), 'dist', 'templates', `${templateName}.hbs`),
+      path.join(process.cwd(), 'public', 'templates', `${templateName}.hbs`),
+      path.join(__dirname, '..', 'templates', `${templateName}.hbs`),
+    ];
 
-    
-    if (!fs.existsSync(templatePath)) {
+    for (const path of possiblePaths) {
+      if (fs.existsSync(path)) {
+        templatePath = path;
+        break;
+      }
+    }
+
+    if (!templatePath) {
       throw new BadRequestException('Template no encontrado');
     }
 
