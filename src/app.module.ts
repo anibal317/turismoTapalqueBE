@@ -10,9 +10,8 @@ import { SubtypeEntityModule } from './subtype-entity/subtype-entity.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { MailerCustomModule } from './mailer/mailer.module';
-import { SentEmailsModule } from './emails/emails.module';
 import { RolesGuard } from './common/guards/roles.guard';
-
+import { EmailModule } from './emails/emails.module';
 
 @Module({
   imports: [
@@ -37,7 +36,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     UserModule,
     AuthModule,
     MailerCustomModule,
-    SentEmailsModule,
+    EmailModule,
     
   ],
   controllers: [AppController],
