@@ -16,7 +16,8 @@ export class EmailService {
     subject?: string 
   ) {
     // Ruta dinámica del template usando ruta absoluta
-    const templatePath = path.join(__dirname, '..', 'templates', `${templateName}.hbs`);
+    const templatePath = path.join(process.cwd(), 'src', 'templates', `${templateName}.hbs`);
+
     
     if (!fs.existsSync(templatePath)) {
       throw new BadRequestException('Template no encontrado');
