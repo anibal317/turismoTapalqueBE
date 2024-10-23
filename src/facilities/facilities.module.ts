@@ -7,7 +7,7 @@ import { SubtypeEntity } from 'src/subtype-entity/entities/subtype-entity.entity
 import { TypeEntity } from 'src/type-entity/entities/type-entity.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Facility,SubtypeEntity,TypeEntity])],
+  imports: [TypeOrmModule.forFeature([Facility,SubtypeEntity])],
   controllers: [FacilitiesController],
   providers: [FacilitiesService],
 })
