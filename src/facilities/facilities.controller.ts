@@ -21,6 +21,10 @@ export class FacilitiesController {
   findOne(@Param('id') id: string) {
     return this.facilitiesService.findOne(+id);
   }
+  @Patch('/restore/:id')
+  restore(@Param('id') id: string) {
+    return this.facilitiesService.restore(+id);
+  }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateFacilityDto: UpdateFacilityDto) {
