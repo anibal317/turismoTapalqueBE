@@ -19,6 +19,7 @@ import { EmailController } from './email.controller';
           auth: {
             user: configService.get('SMTP_USER'),
             pass: configService.get('SMTP_PASS'),
+            type: 'PLAIN' // Or 'LOGIN', 'CRAM-MD5', etc. depending on your SMTP server
           },
         },
         defaults: {
