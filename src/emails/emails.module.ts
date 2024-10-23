@@ -22,6 +22,9 @@ import { EmailController } from './email.controller';
             type: 'PLAIN' // Or 'LOGIN', 'CRAM-MD5', etc. depending on your SMTP server
           },
         },
+        tls: {
+          rejectUnauthorized: false // Si tienes problemas con los certificados SSL
+        },
         defaults: {
           from: '"No Reply" <noreply@example.com>',
         },
