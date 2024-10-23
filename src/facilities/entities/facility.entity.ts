@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { SubtypeEntity } from "src/subtype-entity/entities/subtype-entity.entity";
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('facilities')
 export class Facility {
@@ -10,4 +11,8 @@ export class Facility {
 
     @Column({nullable:false,default:'-'})
     description:string
+
+        // Relación muchos a muchos con SubtypeEntity
+        @ManyToMany(() => SubtypeEntity, (subtype) => subtype.facilities)
+        subtypes: SubtypeEntity[];
 }
