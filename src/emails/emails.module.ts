@@ -18,7 +18,7 @@ import { EmailController } from './email.controller';
           secure: configService.get('SMTP_PORT'),
           auth: {
             user: configService.get('SMTP_USER'),
-            pass: configService.get('SMTP_PASS'),
+            pass: 's3cr3ta',
             type: 'PLAIN' // Or 'LOGIN', 'CRAM-MD5', etc. depending on your SMTP server
           },
         },
