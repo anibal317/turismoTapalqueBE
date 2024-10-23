@@ -9,13 +9,16 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { User } from '../user/entities/user.entity';
 import { FacilitiesModule } from 'src/facilities/facilities.module';
+import { Facility } from 'src/facilities/entities/facility.entity';
 @Module({
-  imports: [TypeOrmModule.forFeature([CityPointOfInterest, TypeEntity, SubtypeEntity,User]),
+  imports: [TypeOrmModule.forFeature([CityPointOfInterest, TypeEntity, SubtypeEntity,User,Facility]),
   JwtModule.register({
     secret: 'tu_secreto_jwt', // Usa una variable de entorno para esto en producción
     signOptions: { expiresIn: '60m' },
   }),
-  FacilitiesModule],
+  FacilitiesModule,
+  CityPointOfInterestModule
+],
   controllers: [CityPointOfInterestController],
   providers: [CityPointOfInterestService, RolesGuard],
 })
