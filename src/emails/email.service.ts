@@ -16,7 +16,7 @@ export class EmailService {
     subject?: string   // Asunto dinámico, opcional
   ) {
     // Ruta dinámica del template
-    const templatePath = path.join('./src/emails/templates/', `${templateName}.hbs`);
+    const templatePath = path.join('../src/emails/templates/', `${templateName}.hbs`);
     
     // Verificación de la existencia del template
     if (!fs.existsSync(templatePath)) {
