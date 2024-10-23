@@ -8,9 +8,8 @@ import { SubtypeEntity } from '../subtype-entity/entities/subtype-entity.entity'
 import { RolesGuard } from '../common/guards/roles.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { User } from '../user/entities/user.entity';
-import { Facility } from 'src/facilities/entities/facility.entity';
 @Module({
-  imports: [TypeOrmModule.forFeature([CityPointOfInterest, TypeEntity, SubtypeEntity,User,Facility]),
+  imports: [TypeOrmModule.forFeature([CityPointOfInterest, TypeEntity, SubtypeEntity,User]),
   JwtModule.register({
     secret: 'tu_secreto_jwt', // Usa una variable de entorno para esto en producción
     signOptions: { expiresIn: '60m' },

@@ -47,8 +47,4 @@ export class CreateCityPointOfInterestDto {
   @IsOptional()
   @Type(() => Date)
   startDate?: Date
-
-  @IsOptional()
-  @IsArray()
-  facilityIds: number[]
 }

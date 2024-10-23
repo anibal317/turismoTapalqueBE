@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsArray, IsDate, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator"
+import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator"
 import { TypeEntity } from "../../type-entity/entities/type-entity.entity";
 
 export class CreateSubtypeEntityDto {
@@ -13,9 +13,4 @@ export class CreateSubtypeEntityDto {
     @IsNotEmpty()
     @Type(() => TypeEntity)
     type: TypeEntity;
-
-    @IsOptional()
-    @IsArray()
-    @IsNumber({}, { each: true })  // Cada elemento debe ser un número
-    facilityIds?: number[];
 }
