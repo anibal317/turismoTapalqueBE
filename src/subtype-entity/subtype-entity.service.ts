@@ -42,7 +42,7 @@ export class SubtypeEntityService {
     sortOrder?: 'ASC' | 'DESC', // Dirección por defecto
     limit?: number) {
     const options: any = {
-      relations: ['type'],
+      relations: ['type','facilities'],
       where: {},
       order: {
         [sortField || 'name']: sortOrder || 'DESC'
