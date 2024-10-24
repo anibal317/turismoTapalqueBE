@@ -40,7 +40,7 @@ export class CityPointOfInterestService {
     const type = await this.typeRepository.findOne({ where: { id: Number(typeId) } });
     if (!type) throw new NotFoundException(`Type with ID ${typeId} not found`);
 
-    // Validaciones específicas para tipo 3
+    // Validaciones específicas para tipo 1
     if (type.id === 1) {
       if (!startDate) {
         throw new HttpException('StartDate is required for Type Events', HttpStatus.BAD_REQUEST);
