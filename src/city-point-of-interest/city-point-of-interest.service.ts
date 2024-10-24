@@ -41,9 +41,9 @@ export class CityPointOfInterestService {
     if (!type) throw new NotFoundException(`Type with ID ${typeId} not found`);
 
     // Validaciones específicas para tipo 3
-    if (type.id === 3) {
+    if (type.id === 1) {
       if (!startDate) {
-        throw new HttpException('StartDate is required for Type 3', HttpStatus.BAD_REQUEST);
+        throw new HttpException('StartDate is required for Type Events', HttpStatus.BAD_REQUEST);
       }
     }
 
@@ -127,56 +127,63 @@ export class CityPointOfInterestService {
   }
 
   async findAll(
-    limitParam?: number,  // Opcional
-    pageParam?: number,   // Opcional
+    limitParam?: number,
+    pageParam?: number,
     idType?: number,
     idSubtype?: number,
     idUser?: number,
     sortField?: string,
     sortOrder?: 'ASC' | 'DESC'
   ): Promise<{ results: CityPointOfInterest[]; total: number; page: number; limit: number; links: { previous: string | null; next: string | null } }> {
-
+  
     const limit = limitParam ? Number(limitParam) : 10;
     const page = pageParam ? Number(pageParam) : 1;
-
+  
     if (isNaN(limit) || limit <= 0) {
       throw new HttpException('Invalid limit value', HttpStatus.BAD_REQUEST);
     }
-
+  
     if (isNaN(page) || page <= 0) {
       throw new HttpException('Invalid page value', HttpStatus.BAD_REQUEST);
     }
-
-    // Configurar las opciones de búsqueda
-    const options: FindManyOptions<CityPointOfInterest> = {
-      take: limit,
-      skip: (page - 1) * limit,
-      relations: ['type', 'subtype', 'facilities'],
-      where: {},
-      order: {
-        [sortField || 'name']: sortOrder || 'DESC',
-      },
-    };
-
+  
+    // Crear el QueryBuilder
+    const queryBuilder = this.cityPointOfInterestRepository.createQueryBuilder('cityPoint')
+      .leftJoinAndSelect('cityPoint.type', 'type')
+      .leftJoinAndSelect('cityPoint.subtype', 'subtype')
+      .leftJoinAndSelect('cityPoint.facilities', 'facilities')
+      .take(limit)
+      .skip((page - 1) * limit);
+  
     // Condiciones opcionales
-    if (idType) options.where['type'] = { id: idType };
-    if (idSubtype) options.where['subtype'] = { id: idSubtype };
-    if (idUser) options.where['idUser'] = idUser;
-
-    const [cityPoints, total] = await this.cityPointOfInterestRepository.findAndCount(options);
-
+    if (idType) queryBuilder.andWhere('type.id = :idType', { idType });
+    if (idSubtype) queryBuilder.andWhere('subtype.id = :idSubtype', { idSubtype });
+    if (idUser) queryBuilder.andWhere('cityPoint.idUser = :idUser', { idUser });
+  
+    // Configurar la lógica de orden basado en el campo de orden
+    if (sortField === 'type') {
+      queryBuilder.orderBy('type.name', sortOrder || 'DESC');
+    } else if (sortField === 'subtype') {
+      queryBuilder.orderBy('subtype.name', sortOrder || 'DESC');
+    } else {
+      queryBuilder.orderBy(`cityPoint.${sortField || 'name'}`, sortOrder || 'DESC');
+    }
+  
+    // Ejecutar la consulta y obtener los resultados
+    const [cityPoints, total] = await queryBuilder.getManyAndCount();
+  
     if (total === 0) {
       throw new HttpException('No content', HttpStatus.NO_CONTENT);
     }
-
+  
     const links = {
       previous: page > 1 ? `/city-point-of-interest?limit=${limit}&page=${page - 1}` : null,
       next: (page * limit) < total ? `/city-point-of-interest?limit=${limit}&page=${page + 1}` : null,
     };
-
+  
     return { results: cityPoints, total, page, limit, links };
   }
-
+  
 
   async findAllWithDeleted(limit: number = 10, page: number = 1) {
     const [res, total] = await this.cityPointOfInterestRepository.findAndCount({

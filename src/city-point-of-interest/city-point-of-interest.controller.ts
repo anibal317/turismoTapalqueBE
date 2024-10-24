@@ -17,7 +17,7 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiQuery, 
 @Controller('city-point-of-interest')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 export class CityPointOfInterestController {
-  constructor(private readonly cityPointOfInterestService: CityPointOfInterestService) {}
+  constructor(private readonly cityPointOfInterestService: CityPointOfInterestService) { }
 
   @Post()
   @Roles(UserRole.USER, UserRole.ADMIN)
@@ -77,10 +77,10 @@ export class CityPointOfInterestController {
     @Body() createCityPointDto: CreateCityPointOfInterestDto
   ) {
     const uploadedFiles = files ? files.map(file => `/uploads/citypoints/${file.filename}`) : [];
-    
+
     // Agregar facilities al DTO si existen
     const facilities = createCityPointDto.facilities ? createCityPointDto.facilities : [];
-  
+
     const cityPointDto = {
       ...createCityPointDto,
       typeId,
@@ -89,7 +89,7 @@ export class CityPointOfInterestController {
       images: uploadedFiles.length > 0 ? uploadedFiles : createCityPointDto.images || [],
       facilities,  // Incluir facilities en el DTO
     };
-  
+
     return this.cityPointOfInterestService.create(cityPointDto);
   }
 
@@ -102,7 +102,7 @@ export class CityPointOfInterestController {
   @ApiQuery({ name: 'idType', required: false, type: Number, description: 'Filter by type ID' })
   @ApiQuery({ name: 'idSubtype', required: false, type: Number, description: 'Filter by subtype ID' })
   @ApiQuery({ name: 'idUser', required: false, type: Number, description: 'Filter by user ID' })
-  @ApiQuery({ name: 'sortField', required: false, type: String, description: 'Field to sort by' })
+  @ApiQuery({ name: 'sortField', required: false, type: String, description: 'Field to sort by (e.g., "type", "subtype", "name")' })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'], description: 'Sort order' })
   async findAll(
     @Query('limit') limit?: number,
@@ -114,11 +114,23 @@ export class CityPointOfInterestController {
     @Query('sortOrder') sortOrder?: 'ASC' | 'DESC'
   ) {
     try {
-      return await this.cityPointOfInterestService.findAll(limit, page, idType, idSubtype, idUser, sortField, sortOrder);
+      // Llamar al servicio para obtener los resultados
+      const result = await this.cityPointOfInterestService.findAll(
+        limit,
+        page,
+        idType,
+        idSubtype,
+        idUser,
+        sortField,  // Este campo puede ser "name", "type" o "subtype"
+        sortOrder   // El orden puede ser ASC o DESC
+      );
+
+      return result;
     } catch (error) {
       if (error instanceof HttpException) {
-        throw error;
+        throw error;  // Si es una excepción HTTP, propágala
       }
+      // En caso de otro tipo de error, devolver un error interno del servidor
       throw new HttpException('Failed to retrieve city points of interest', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
