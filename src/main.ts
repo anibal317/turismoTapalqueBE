@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { RedirectMiddleware } from './redirect.middleware';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { SwaggerTheme, SwaggerThemeNameEnum } from 'swagger-themes';
-import { StaticFilesMiddleware } from './static.middleware'; 
+import { StaticFilesMiddleware } from './static.middleware';
 import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
@@ -13,8 +13,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
- // Registra el middleware antes de todas las rutas
- app.use('/templates', new StaticFilesMiddleware().use);
+  // Registra el middleware antes de todas las rutas
+  app.use('/templates', new StaticFilesMiddleware().use);
 
   app.useGlobalPipes(new ValidationPipe(
     {
@@ -29,15 +29,8 @@ async function bootstrap() {
 
   // Obtener los orígenes permitidos desde las variables de entorno
   let allowedOrigins = configService.get<string>('CORS_ALLOWED_ORIGINS')?.split(',');
-
   app.enableCors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error('CORS no permitido para este origen'));
-      }
-    },
+    origin: ['https://ciba-fe.vercel.app', 'http://localhost:3000', 'locahost'],
     // origin:['*'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
