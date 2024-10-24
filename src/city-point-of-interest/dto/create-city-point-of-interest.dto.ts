@@ -5,16 +5,16 @@ export class CreateCityPointOfInterestDto {
   @IsString()
   name: string;
 
-  @IsString()
   @IsNotEmpty()
-  typeId: number;
+  @IsNumber() 
+   typeId: number;
 
-  @IsString()
+   @IsNumber()
   @IsNotEmpty()
   @IsOptional()
   subtypeId: number;
 
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
   idUser: number;
 
@@ -28,7 +28,7 @@ export class CreateCityPointOfInterestDto {
   @IsOptional()
   state: number;
 
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
   @IsOptional()
   places: number;

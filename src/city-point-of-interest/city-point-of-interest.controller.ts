@@ -31,8 +31,8 @@ export class CityPointOfInterestController {
       properties: {
         name: { type: 'string', example: 'Eiffel Tower' },
         description: { type: 'string', example: 'Famous iron lattice tower in Paris' },
-        typeId: { type: 'number', example: 1 },
-        subtypeId: { type: 'number', example: 2 },
+        typeId: { type: 'string', example: 'EVENTS' },  // Cambiar a string para reflejar el nombre
+        subtypeId: { type: 'string', example: 'SUBTYPE_NAME' }, // Cambiar a string para reflejar el nombre
         idUser: { type: 'number', example: 1 },
         facilities: {
           type: 'array',
@@ -41,6 +41,7 @@ export class CityPointOfInterestController {
           },
           example: [1, 2, 3],  // Lista de IDs de facilities
         },
+        startDate: { type: 'string', format: 'date-time', example: '2024-01-01T00:00:00Z' }, // Agregar startDate
         images: {
           type: 'array',
           items: {
@@ -71,27 +72,26 @@ export class CityPointOfInterestController {
   )
   async create(
     @UploadedFiles() files: Express.Multer.File[],
-    @Body('typeId', ParseIntPipe) typeId: number,
-    @Body('subtypeId', ParseIntPipe) subtypeId: number,
+    @Body('typeId', ParseIntPipe) typeId: string, // Cambiar a string
+    @Body('subtypeId', ParseIntPipe) subtypeId: string, // Cambiar a string
     @Body('idUser', ParseIntPipe) idUser: number,
+    @Body('startDate') startDate: string, // Agregar startDate
     @Body() createCityPointDto: CreateCityPointOfInterestDto
   ) {
     const uploadedFiles = files ? files.map(file => `/uploads/citypoints/${file.filename}`) : [];
-
+  
     // Agregar facilities al DTO si existen
-    const facilities = createCityPointDto.facilities ? createCityPointDto.facilities : [];
-
-    const cityPointDto = {
-      ...createCityPointDto,
-      typeId,
-      subtypeId,
-      idUser,
-      images: uploadedFiles.length > 0 ? uploadedFiles : createCityPointDto.images || [],
-      facilities,  // Incluir facilities en el DTO
-    };
-
+    const facilities = createCityPointDto.facilities || [];
+  
+  // Crea el DTO de ciudad
+  const cityPointDto = {
+    ...createCityPointDto,
+    images: uploadedFiles.length > 0 ? uploadedFiles : createCityPointDto.images || [],
+    facilities,  // Asegúrate de que facilities se asigna correctamente
+  };
     return this.cityPointOfInterestService.create(cityPointDto);
   }
+  
 
   @Get()
   @Roles(UserRole.USER, UserRole.ADMIN)

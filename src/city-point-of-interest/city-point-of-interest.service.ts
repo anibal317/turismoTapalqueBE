@@ -29,46 +29,72 @@ export class CityPointOfInterestService {
   ) { }
 
   async create(createCityPointOfInterestDto: CreateCityPointOfInterestDto): Promise<CityPointOfInterest> {
-    const { name, typeId, subtypeId, idUser, images, facilities, contact, address, description, stars, places, startDate, state } = createCityPointOfInterestDto;
+    const {
+        name,
+        typeId,
+        subtypeId,
+        idUser,
+        images,
+        facilities,
+        contact,
+        address,
+        description,
+        stars,
+        places,
+        startDate,
+        state,
+    } = createCityPointOfInterestDto;
 
-    // Validaciones de name y idUser
+    // Validaciones de nombre e idUsuario
     if (!name || !idUser) {
-      throw new HttpException('Name and IdUser are required', HttpStatus.BAD_REQUEST);
+        throw new HttpException('Name and IdUser are required', HttpStatus.BAD_REQUEST);
     }
 
-    // Fetch type
+    // Obtener el tipo por ID
     const type = await this.typeRepository.findOne({ where: { id: Number(typeId) } });
     if (!type) throw new NotFoundException(`Type with ID ${typeId} not found`);
 
-    // Validaciones específicas para tipo 1
-    if (type.id === 1) {
-      if (!startDate) {
+    // Validaciones específicas para tipo 'Eventos'
+    if (type.name === 'Eventos' && !startDate) {
         throw new HttpException('StartDate is required for Type Events', HttpStatus.BAD_REQUEST);
-      }
     }
 
-    // Fetch subtype if provided and not type 3
-    let subtype: SubtypeEntity | null = null;
-    if (subtypeId && type.id !== 3) {
-      subtype = await this.subtypeRepository.findOne({
-        where: { id: Number(subtypeId) },
-        relations: ['type']
-      });
-      if (!subtype) throw new NotFoundException(`Subtype with ID ${subtypeId} not found`);
-
-      // Validación para asegurarse de que el subtype pertenezca al type
-      if (subtype.type.id !== type.id) {
-        throw new HttpException(`Subtype with ID ${subtypeId} does not belong to Type with ID ${typeId}`, HttpStatus.BAD_REQUEST);
-      }
-    }
-
-    // Fetch facilities if provided and not type 3
     let facilitiesEntities: Facility[] = [];
-    if (facilities && facilities.length > 0 && type.id !== 3) {
-      facilitiesEntities = await this.facilityRepository.findByIds(facilities);
-      if (facilitiesEntities.length !== facilities.length) {
-        throw new NotFoundException(`One or more facilities not found`);
-      }
+    let subtype: SubtypeEntity | null = null;
+
+    // Validar subtipo
+    if (subtypeId) {
+        subtype = await this.subtypeRepository.findOne({
+            where: { id: Number(subtypeId) },
+            relations: ['type', 'facilities'], // Cargar el tipo relacionado
+        });
+
+        // Comprobar si el subtipo existe
+        if (!subtype) {
+            throw new NotFoundException(`Subtype with ID ${subtypeId} not found`);
+        }
+
+        // Validar que el subtipo pertenezca al tipo
+        if (!subtype.type || subtype.type.id !== type.id) {
+            throw new HttpException(`Subtype with ID ${subtypeId} does not belong to Type with ID ${typeId}`, HttpStatus.BAD_REQUEST);
+        }
+
+        // Validar que las instalaciones pertenezcan al subtipo
+        if (facilities && facilities.length > 0) {
+            const validFacilities = await this.facilityRepository
+                .createQueryBuilder('facility')
+                .innerJoin('facility.subtypes', 'subtype')
+                .where('subtype.id = :subtypeId', { subtypeId })
+                .getMany();
+
+            const validFacilityIds = validFacilities.map(facility => facility.id);
+            const invalidFacilities = facilities.filter(facilityId => !validFacilityIds.includes(facilityId));
+            if (invalidFacilities.length > 0) {
+                throw new HttpException(`Facility IDs ${invalidFacilities.join(', ')} do not belong to Subtype with ID ${subtypeId}`, HttpStatus.BAD_REQUEST);
+            }
+
+            facilitiesEntities = validFacilities;
+        }
     }
 
     // Crear el nuevo CityPointOfInterest
@@ -77,26 +103,33 @@ export class CityPointOfInterestService {
     newCityPointOfInterest.type = type;
     newCityPointOfInterest.typeId = type.id;
     newCityPointOfInterest.subtype = subtype;
-    newCityPointOfInterest.subtypeId = subtype ? subtype.id : 1;
-    newCityPointOfInterest.idUser = Number(idUser);
-    newCityPointOfInterest.images = images || [];
-    newCityPointOfInterest.facilities = facilitiesEntities;
-    newCityPointOfInterest.contact = contact || '';
-    newCityPointOfInterest.address = address || '';
-    newCityPointOfInterest.description = description || '';
-    newCityPointOfInterest.stars = stars ? Number(stars) : 0;
-    newCityPointOfInterest.places = places ? Number(places) : 0;
-    newCityPointOfInterest.startDate = startDate ? new Date(startDate) : null;
-    newCityPointOfInterest.state = state ? Number(state) : 0;
 
-    // Guardar el nuevo CityPointOfInterest
     try {
-      return await this.cityPointOfInterestRepository.save(newCityPointOfInterest);
+        newCityPointOfInterest.subtypeId = subtype ? subtype.id : null;
+        newCityPointOfInterest.idUser = Number(idUser);
+        newCityPointOfInterest.images = images || [];
+        newCityPointOfInterest.facilities = facilitiesEntities;
+        newCityPointOfInterest.contact = contact || '';
+        newCityPointOfInterest.address = address || '';
+        newCityPointOfInterest.description = description || '';
+        newCityPointOfInterest.stars = stars ? Number(stars) : 0;
+        newCityPointOfInterest.places = places ? Number(places) : 0;
+        newCityPointOfInterest.startDate = startDate ? new Date(startDate) : null;
+        newCityPointOfInterest.state = state ? Number(state) : 0;
+
+        // Guardar el nuevo CityPointOfInterest
+        return await this.cityPointOfInterestRepository.save(newCityPointOfInterest);
     } catch (error) {
-      console.error('Error saving CityPointOfInterest:', error);
-      throw new HttpException('Error saving CityPointOfInterest', HttpStatus.INTERNAL_SERVER_ERROR);
+        console.error('Error saving CityPointOfInterest:', error);
+
+        if (error instanceof TypeError && error.message.includes('Cannot read properties of undefined')) {
+            throw new HttpException('Failed to create CityPointOfInterest: One of the required fields is undefined. Please check your input.', HttpStatus.BAD_REQUEST);
+        }
+
+        throw new HttpException('Error saving CityPointOfInterest', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }
+}
+
 
   async findDeleted(limit: number = 10, page: number = 1) {
     const [results, total] = await this.cityPointOfInterestRepository.findAndCount({
