@@ -5,12 +5,13 @@ export class CreateCityPointOfInterestDto {
   @IsString()
   name: string;
 
-  @IsString( )
+  @IsString()
   @IsNotEmpty()
   typeId: number;
 
   @IsString()
   @IsNotEmpty()
+  @IsOptional()
   subtypeId: number;
 
   @IsString()
@@ -21,6 +22,11 @@ export class CreateCityPointOfInterestDto {
   @IsNotEmpty()
   @IsOptional()
   stars: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @IsOptional()
+  state: number;
 
   @IsString()
   @IsNotEmpty()
@@ -38,18 +44,18 @@ export class CreateCityPointOfInterestDto {
   @IsString()
   @IsOptional()
   address?: string
- 
+
   @IsString()
   @IsOptional()
   description?: string
- 
+
   @IsDate()
   @IsOptional()
   @Type(() => Date)
   startDate?: Date
 
   @IsArray()
-  @ArrayNotEmpty()
+  // @ArrayNotEmpty()
   @IsNumber({}, { each: true })  // Asegurarse de que cada elemento del array sea un número
   @IsOptional()
   facilities?: number[];  // IDs de instalaciones (facilities)

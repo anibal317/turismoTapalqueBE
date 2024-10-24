@@ -30,7 +30,7 @@ export class CityPointOfInterest {
     @JoinColumn({ name: 'subtypeId' })  // Esto creará la columna 'subtypeId'
     subtype: SubtypeEntity;
 
-    @Column({ nullable: false })
+    @Column({ nullable: false, default: "0" })
     subtypeId: number;  // Especificamos explícitamente la columna 'subtypeId'
 
     @Column({ nullable: true, default: "-" })

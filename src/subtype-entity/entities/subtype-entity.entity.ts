@@ -6,26 +6,26 @@ import { Facility } from "src/facilities/entities/facility.entity";
 @Entity("subtype")
 export class SubtypeEntity {
     @PrimaryGeneratedColumn()
-    id:number
+    id: number
 
-    @Column({nullable:false})
-    name:string
+    @Column({ nullable: false })
+    name: string
 
-    @Column({nullable:true,default:"-"})
-    description:string
-    
+    @Column({ nullable: true, default: "-" })
+    description: string
+
     @ManyToOne(() => TypeEntity, (type) => type.id)
     type: TypeEntity
 
     @OneToMany(() => CityPointOfInterest, (cityPoint) => cityPoint.subtype)
     cityPoints: CityPointOfInterest[];
 
-       // Relación muchos a muchos con Facility
-       @ManyToMany(() => Facility, (facility) => facility.subtypes)
-       @JoinTable({
-           name: 'subtype_facilities',  // Nombre de la tabla intermedia
-           joinColumn: { name: 'subtypeId', referencedColumnName: 'id' },
-           inverseJoinColumn: { name: 'facilityId', referencedColumnName: 'id' },
-       })
-       facilities: Facility[];
+    // Relación muchos a muchos con Facility
+    @ManyToMany(() => Facility, (facility) => facility.subtypes)
+    @JoinTable({
+        name: 'subtype_facilities',  // Nombre de la tabla intermedia
+        joinColumn: { name: 'subtypeId', referencedColumnName: 'id' },
+        inverseJoinColumn: { name: 'facilityId', referencedColumnName: 'id' },
+    })
+    facilities: Facility[];
 }
