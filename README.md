@@ -71,3 +71,40 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
+
+
+# Create Store procedures on MySQL
+
+-- Active: 1728419666721@@89.117.7.212@3306@u341434651_tapalquetur
+-- Active: 1729725555160@@127.0.0.1@3306@turismo
+-- --Store Procedure
+-- DELIMITER //
+
+-- CREATE PROCEDURE depricatedEvents()
+-- BEGIN
+--     UPDATE citypoints
+--     SET state = 2  -- Asumiendo que 2 es el estado que quieres asignar
+--     WHERE typeId = 1 AND startDate < CURRENT_TIMESTAMP;
+-- END //
+
+-- DELIMITER ;
+
+--Create Event to trigger
+DELIMITER //
+
+CREATE EVENT depricatedEvents
+ON SCHEDULE EVERY 1 DAY
+STARTS CURRENT_TIMESTAMP
+DO
+BEGIN
+    CALL depricatedEvents();
+END //
+
+DELIMITER ;
+
+SHOW EVENTS;
+
+-- call `depricateEvents`()
+
+SHOW PROCEDURE STATUS;
+SHOW FUNCTION STATUS;
