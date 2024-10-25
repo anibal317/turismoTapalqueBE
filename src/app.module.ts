@@ -13,6 +13,7 @@ import { RolesGuard } from './common/guards/roles.guard';
 import { EmailModule } from './emails/emails.module';
 import { FacilitiesModule } from './facilities/facilities.module';
 import { FilesModule } from './files/files.modules';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -39,7 +40,7 @@ import { FilesModule } from './files/files.modules';
     MailerCustomModule,
     EmailModule,
     FacilitiesModule,
-    FilesModule
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService, RolesGuard],
