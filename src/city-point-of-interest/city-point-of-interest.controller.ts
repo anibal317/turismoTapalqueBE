@@ -217,8 +217,7 @@ async update(
   @Body() updateCityPointDto: UpdateCityPointOfInterestDto,
   @UploadedFiles() files: Express.Multer.File[]
 ) {
-  const uploadDir = process.env.FILE_UPLOADS_DIR || 'uploads';
-  const uploadedFiles = files ? files.map(file => join('/', uploadDir, 'citypoints', file.filename)) : [];
+  const uploadedFiles = files ? files.map(file => join('https://turismo-tapalque-be.vercel.app/files/citypoints/', file.filename)) : [];
   
   const cityPointDto = {
     ...updateCityPointDto,
