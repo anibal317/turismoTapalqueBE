@@ -7,6 +7,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { SwaggerTheme, SwaggerThemeNameEnum } from 'swagger-themes';
 import { StaticFilesMiddleware } from './static.middleware';
 import { Logger } from '@nestjs/common';
+import 'dotenv/config';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');

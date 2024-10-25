@@ -9,8 +9,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       imports: [ConfigModule],
       useFactory: async () => ({
         transport: {
-          host: 'smtp.gmail.com',
-          port: 587,
+          host: process.env.SMTP_HOST,
+          port: parseInt(process.env.SMTP_PORT),
           secure: false, // true for 465, false for other ports
           auth: {
             user: process.env.EMAIL_USER,
@@ -18,7 +18,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
           },
         },
         defaults: {
-          from: '"No Reply" <your-email@gmail.com>',
+          from: process.env.EMAIL_USER,
         },
       }),
       inject: [ConfigService],
