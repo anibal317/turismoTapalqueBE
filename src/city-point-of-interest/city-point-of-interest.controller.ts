@@ -66,7 +66,8 @@ export class CityPointOfInterestController {
         cb(null, cityPointsDir);
       },
       filename: (req, file, cb) => {
-        const uniqueFilename = `${uuidv4()}${extname(file.originalname)}`;
+        // const uniqueFilename = `${uuidv4()}${extname(file.originalname)}`;
+        const uniqueFilename = `https://turismo-tapalque-be.vercel.app/files/citypoints/${file.originalname}`;
         cb(null, uniqueFilename);
       },
     }),
@@ -82,7 +83,8 @@ async create(
 ) {
   console.log(typeId,subtypeId,idUser);
   const uploadDir = process.env.FILE_UPLOADS_DIR || 'uploads';
-  const uploadedFiles = files ? files.map(file => join('/', uploadDir, 'citypoints', file.filename)) : [];
+  // const uploadedFiles = files ? files.map(file => join('/', uploadDir, 'citypoints', file.filename)) : [];
+  const uploadedFiles = files ? files.map(file =>  file.filename) : [];
 
   const facilities = createCityPointDto.facilities ? createCityPointDto.facilities.map(Number) : [];
 
@@ -204,7 +206,7 @@ async create(
         cb(null, cityPointsDir);
       },
       filename: (req, file, cb) => {
-        const uniqueFilename = `${uuidv4()}${extname(file.originalname)}`;
+        const uniqueFilename = `${file.originalname}`;
         cb(null, uniqueFilename);
       },
     }),
