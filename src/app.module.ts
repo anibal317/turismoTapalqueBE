@@ -14,6 +14,7 @@ import { EmailModule } from './emails/emails.module';
 import { FacilitiesModule } from './facilities/facilities.module';
 import { FilesModule } from './files/files.modules';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
@@ -31,6 +32,22 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
       autoLoadEntities: true,
       synchronize: true,
       logging:true
+    }),
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.hostinger.com',
+        port: 587,
+        secure: false, // true for 465, false for other ports
+
+        auth: {
+          user: 'noresponder@tapalque.tur.ar',
+          pass: 'N5j&&Uerbnn',
+
+        },
+      },
+      defaults: {
+        from: 'noresponder@tapalque.tur.ar',
+      }
     }),
     CityPointOfInterestModule,
     TypeEntityModule,
