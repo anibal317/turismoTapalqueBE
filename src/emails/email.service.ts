@@ -37,6 +37,7 @@ export class EmailService {
       this.logger.log(`Attempting to send email to ${email}`);
       
       const result = await this.mailerService.sendMail({
+        from: 'noresponder@tapalque.tur.ar',
         to: email,
         subject: subject || 'Asunto predeterminado',
         html,
