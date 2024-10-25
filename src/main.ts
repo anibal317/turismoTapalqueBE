@@ -31,7 +31,7 @@ async function bootstrap() {
   // Obtener los orígenes permitidos desde las variables de entorno
   let allowedOrigins = configService.get<string>('CORS_ALLOWED_ORIGINS')?.split(',');
   app.enableCors({
-    origin: ['https://tapalque.tur.ar/', 'http://localhost:3000', 'locahost','https://turismo-tapalque-be.vercel.app'],
+    origin: ['https://tapalque.tur.ar/', 'http://localhost:3000', 'locahost','https://turismo-tapalque-be.vercel.app/auth/login'],
     // origin:['*'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
