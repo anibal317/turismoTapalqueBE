@@ -30,66 +30,64 @@ export class CityPointOfInterestService {
 
   async create(createCityPointOfInterestDto: CreateCityPointOfInterestDto): Promise<CityPointOfInterest> {
     const {
-        name,
-        typeId,
-        subtypeId,
-        idUser,
-        images,
-        facilities,
-        contact,
-        address,
-        description,
-        stars,
-        places,
-        startDate,
-        state,
+      name,
+      typeId,
+      subtypeId,
+      idUser,
+      images,
+      facilities,
+      contact,
+      address,
+      description,
+      stars,
+      places,
+      startDate,
+      state,
     } = createCityPointOfInterestDto;
 
     if (!name || !idUser) {
-        throw new HttpException('Name and IdUser are required', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Name and IdUser are required', HttpStatus.BAD_REQUEST);
     }
 
-    const type = await this.typeRepository.findOne({ where: { id: Number(typeId) } });
+    const type = await this.typeRepository.findOne({ where: { id: typeId } });
     if (!type) throw new NotFoundException(`Type with ID ${typeId} not found`);
 
     if (type.name === 'Eventos' && !startDate) {
-        throw new HttpException('StartDate is required for Type Events', HttpStatus.BAD_REQUEST);
+      throw new HttpException('StartDate is required for Type Events', HttpStatus.BAD_REQUEST);
     }
 
     let facilitiesEntities: Facility[] = [];
     let subtype: SubtypeEntity | null = null;
 
     if (subtypeId) {
-        subtype = await this.subtypeRepository.findOne({
-            where: { id: Number(subtypeId) },
-            relations: ['type', 'facilities'],
-        });
+      subtype = await this.subtypeRepository.findOne({
+        where: { id: subtypeId },
+        relations: ['type', 'facilities'],
+      });
 
-        if (!subtype) {
-            throw new NotFoundException(`Subtype with ID ${subtypeId} not found`);
+      if (!subtype) {
+        throw new NotFoundException(`Subtype with ID ${subtypeId} not found`);
+      }
+
+      if (!subtype.type || subtype.type.id !== type.id) {
+        throw new HttpException(`Subtype with ID ${subtypeId} does not belong to Type with ID ${typeId}`, HttpStatus.BAD_REQUEST);
+      }
+
+      if (facilities && facilities.length > 0) {
+        const validFacilities = await this.facilityRepository
+          .createQueryBuilder('facility')
+          .innerJoin('facility.subtypes', 'subtype')
+          .where('subtype.id = :subtypeId', { subtypeId })
+          .andWhere('facility.id IN (:...facilityIds)', { facilityIds: facilities })
+          .getMany();
+
+        if (validFacilities.length !== facilities.length) {
+          const invalidFacilities = facilities.filter(facilityId => !validFacilities.map(f => f.id).includes(facilityId));
+          throw new HttpException(`Invalid Facility IDs: ${invalidFacilities.join(', ')}`, HttpStatus.BAD_REQUEST);
         }
 
-        if (!subtype.type || subtype.type.id !== type.id) {
-            throw new HttpException(`Subtype with ID ${subtypeId} does not belong to Type with ID ${typeId}`, HttpStatus.BAD_REQUEST);
-        }
-
-        if (facilities && facilities.length > 0) {
-            // Filtrando las instalaciones válidas basadas en el subtipos
-            const validFacilities = await this.facilityRepository
-                .createQueryBuilder('facility')
-                .innerJoin('facility.subtypes', 'subtype')
-                .where('subtype.id = :subtypeId', { subtypeId })
-                .andWhere('facility.id IN (:...facilityIds)', { facilityIds: facilities })
-                .getMany();
-
-            // Comprobando que se encuentren instalaciones válidas
-            if (validFacilities.length !== facilities.length) {
-                const invalidFacilities = facilities.filter(facilityId => !validFacilities.map(f => f.id).includes(facilityId));
-                throw new HttpException(`Invalid Facility IDs: ${invalidFacilities.join(', ')}`, HttpStatus.BAD_REQUEST);
-            }
-
-            facilitiesEntities = validFacilities;
-        }
+        facilitiesEntities = validFacilities;
+      }
     }
 
     const newCityPointOfInterest = new CityPointOfInterest();
@@ -99,25 +97,24 @@ export class CityPointOfInterestService {
     newCityPointOfInterest.subtype = subtype;
 
     try {
-        newCityPointOfInterest.subtypeId = subtype ? subtype.id : null;
-        newCityPointOfInterest.idUser = Number(idUser);
-        newCityPointOfInterest.images = images || [];
-        newCityPointOfInterest.facilities = facilitiesEntities; // Asignar solo las instalaciones válidas
-        newCityPointOfInterest.contact = contact || '';
-        newCityPointOfInterest.address = address || '';
-        newCityPointOfInterest.description = description || '';
-        newCityPointOfInterest.stars = stars ? Number(stars) : 0;
-        newCityPointOfInterest.places = places ? Number(places) : 0;
-        newCityPointOfInterest.startDate = startDate ? new Date(startDate) : null;
-        newCityPointOfInterest.state = state ? Number(state) : 0;
+      newCityPointOfInterest.subtypeId = subtype ? subtype.id : null;
+      newCityPointOfInterest.idUser = idUser;
+      newCityPointOfInterest.images = images || [];
+      newCityPointOfInterest.facilities = facilitiesEntities;
+      newCityPointOfInterest.contact = contact || '';
+      newCityPointOfInterest.address = address || '';
+      newCityPointOfInterest.description = description || '';
+      newCityPointOfInterest.stars = stars ? Number(stars) : 0;
+      newCityPointOfInterest.places = places ? Number(places) : 0;
+      newCityPointOfInterest.startDate = startDate ? new Date(startDate) : null;
+      newCityPointOfInterest.state = state ? Number(state) : 0;
 
-        return await this.cityPointOfInterestRepository.save(newCityPointOfInterest);
+      return await this.cityPointOfInterestRepository.save(newCityPointOfInterest);
     } catch (error) {
-        console.error('Error saving CityPointOfInterest:', error);
-        throw new HttpException('Error saving CityPointOfInterest', HttpStatus.INTERNAL_SERVER_ERROR);
+      console.error('Error saving CityPointOfInterest:', error);
+      throw new HttpException('Error saving CityPointOfInterest', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-}
-
+  }
 
   async findDeleted(limit: number = 10, page: number = 1) {
     const [results, total] = await this.cityPointOfInterestRepository.findAndCount({
@@ -217,27 +214,14 @@ export class CityPointOfInterestService {
     return { results: res, total, page, limit };
   }
 
-  async findOne(
-    id: number,
-    idType?: number,
-    idSubtype?: number,
-    idUser?: number
-  ): Promise<CityPointOfInterest> {
-    const options: FindManyOptions<CityPointOfInterest> = {
+  async findOne(id: number): Promise<CityPointOfInterest> {
+    const cityPoint = await this.cityPointOfInterestRepository.findOne({
       where: { id },
-      relations: ['type', 'subtype', 'facilities'],
-    };
-
-    if (idType) options.where['typeId'] = idType;
-    if (idSubtype) options.where['subtypeId'] = idSubtype;
-    if (idUser) options.where['idUser'] = idUser;
-
-    const cityPoint = await this.cityPointOfInterestRepository.findOne(options);
-
+      relations: ['facilities'],
+    });
     if (!cityPoint) {
       throw new NotFoundException(`City point of interest with ID ${id} not found`);
     }
-
     return cityPoint;
   }
 
@@ -251,7 +235,7 @@ export class CityPointOfInterestService {
       }
     }
 
-    // Manejo de las imágenes
+    // Handle images
     let updatedImages = cityPoint.images || [];
     if (newImages && newImages.length > 0) {
       updatedImages = [...updatedImages, ...newImages];
@@ -268,10 +252,9 @@ export class CityPointOfInterestService {
       }
     }
 
-    // Manejo de la relación de muchos a muchos con facilities
+    // Handle facilities
     let facilitiesEntities = cityPoint.facilities || [];
     if (updateCityPointOfInterestDto.facilities && updateCityPointOfInterestDto.facilities.length > 0) {
-      // Verificar si las facilities existen en la base de datos
       facilitiesEntities = await this.facilityRepository.findByIds(updateCityPointOfInterestDto.facilities);
 
       if (facilitiesEntities.length !== updateCityPointOfInterestDto.facilities.length) {
@@ -279,17 +262,20 @@ export class CityPointOfInterestService {
       }
     }
 
-    // Actualizar los datos del CityPoint
+    // Update CityPoint data
     const updatedData = {
       ...updateCityPointOfInterestDto,
       images: updatedImages,
-      facilities: facilitiesEntities // Actualizar la relación con las facilities
+      facilities: facilitiesEntities
     };
 
-    await this.cityPointOfInterestRepository.update(id, updatedData);
-    return this.cityPointOfInterestRepository.findOne({ where: { id } });
-  }
+    await this.cityPointOfInterestRepository.save({
+      id,
+      ...updatedData,
+    });
 
+    return this.findOne(id);
+  }
   async remove(id: number) {
     const eventToDelete = await this.cityPointOfInterestRepository.softDelete(id);
     if (eventToDelete.affected === 0) {

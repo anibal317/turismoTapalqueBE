@@ -6,15 +6,15 @@ export class CreateCityPointOfInterestDto {
   name: string;
 
   @IsNotEmpty()
-  @IsNumber() 
+  @IsString() 
    typeId: number;
 
-   @IsNumber()
+   @IsString()
   @IsNotEmpty()
   @IsOptional()
   subtypeId: number;
 
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
   idUser: number;
 

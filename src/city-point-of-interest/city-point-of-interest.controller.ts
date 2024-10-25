@@ -8,9 +8,11 @@ import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import * as path from 'path';
-import * as fs from 'fs';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { v4 as uuidv4 } from 'uuid';
+import { extname, join } from 'path';
+import { existsSync, mkdirSync } from 'fs';
+
 
 @ApiTags('City Points of Interest')
 @ApiBearerAuth()
@@ -20,78 +22,82 @@ export class CityPointOfInterestController {
   constructor(private readonly cityPointOfInterestService: CityPointOfInterestService) { }
 
   @Post()
-  @Roles(UserRole.USER, UserRole.ADMIN)
-  @ApiOperation({ summary: 'Create a new city point of interest' })
-  @ApiResponse({ status: 201, description: 'The city point of interest has been successfully created' })
-  @ApiResponse({ status: 400, description: 'Bad Request' })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        name: { type: 'string', example: 'Eiffel Tower' },
-        description: { type: 'string', example: 'Famous iron lattice tower in Paris' },
-        typeId: { type: 'string', example: 'EVENTS' },  // Cambiar a string para reflejar el nombre
-        subtypeId: { type: 'string', example: 'SUBTYPE_NAME' }, // Cambiar a string para reflejar el nombre
-        idUser: { type: 'number', example: 1 },
-        facilities: {
-          type: 'array',
-          items: {
-            type: 'number',
-          },
-          example: [1, 2, 3],  // Lista de IDs de facilities
+@Roles(UserRole.USER, UserRole.ADMIN)
+@ApiOperation({ summary: 'Create a new city point of interest' })
+@ApiResponse({ status: 201, description: 'The city point of interest has been successfully created' })
+@ApiResponse({ status: 400, description: 'Bad Request' })
+@ApiConsumes('multipart/form-data')
+@ApiBody({
+  schema: {
+    type: 'object',
+    properties: {
+      name: { type: 'string', example: 'Eiffel Tower' },
+      description: { type: 'string', example: 'Famous iron lattice tower in Paris' },
+      typeId: { type: 'number', example: 1 },
+      subtypeId: { type: 'number', example: 1 },
+      idUser: { type: 'number', example: 1 },
+      facilities: {
+        type: 'array',
+        items: {
+          type: 'number',
         },
-        startDate: { type: 'string', format: 'date-time', example: '2024-01-01T00:00:00Z' }, // Agregar startDate
-        images: {
-          type: 'array',
-          items: {
-            type: 'string',
-            format: 'binary',
-          },
+        example: [1, 2, 3],
+      },
+      startDate: { type: 'string', format: 'date-time', example: '2024-01-01T00:00:00Z' },
+      images: {
+        type: 'array',
+        items: {
+          type: 'string',
+          format: 'binary',
         },
       },
     },
+  },
+})
+@UseInterceptors(
+  FilesInterceptor('images', 10, {
+    storage: diskStorage({
+      destination: (req, file, cb) => {
+        const uploadDir = process.env.FILE_UPLOADS_DIR || 'uploads';
+        const cityPointsDir = join(uploadDir, 'citypoints');
+        if (!existsSync(cityPointsDir)) {
+          mkdirSync(cityPointsDir, { recursive: true });
+        }
+        cb(null, cityPointsDir);
+      },
+      filename: (req, file, cb) => {
+        const uniqueFilename = `${uuidv4()}${extname(file.originalname)}`;
+        cb(null, uniqueFilename);
+      },
+    }),
   })
-  @UseInterceptors(
-    FilesInterceptor('images', 10, {
-      storage: diskStorage({
-        destination: (req, file, cb) => {
-          const uploadPath = path.join(process.env.FILE_UPLOADS_DIR, 'citypoints');
-          fs.promises.mkdir(uploadPath, { recursive: true })
-            .then(() => cb(null, uploadPath))
-            .catch(err => cb(err, uploadPath));
-        },
-        filename: (req, file, cb) => {
-          const customFilename = file.originalname;
-          const extension = path.extname(file.originalname);
-          const fullFilename = `${customFilename}${extension}`;
-          cb(null, fullFilename);
-        },
-      }),
-    })
-  )
-  async create(
-    @UploadedFiles() files: Express.Multer.File[],
-    @Body('typeId', ParseIntPipe) typeId: string, // Cambiar a string
-    @Body('subtypeId', ParseIntPipe) subtypeId: string, // Cambiar a string
-    @Body('idUser', ParseIntPipe) idUser: number,
-    @Body('startDate') startDate: string, // Agregar startDate
-    @Body() createCityPointDto: CreateCityPointOfInterestDto
-  ) {
-    const uploadedFiles = files ? files.map(file => `/uploads/citypoints/${file.filename}`) : [];
-  
-    // Agregar facilities al DTO si existen
-    const facilities = createCityPointDto.facilities || [];
-  
-  // Crea el DTO de ciudad
-  const cityPointDto = {
+)
+async create(
+  @UploadedFiles() files: Express.Multer.File[],
+  @Body('typeId', ParseIntPipe) typeId: number,
+  @Body('subtypeId', ParseIntPipe) subtypeId: number,
+  @Body('idUser', ParseIntPipe) idUser: number,
+  @Body('startDate') startDate: string,
+  @Body() createCityPointDto: CreateCityPointOfInterestDto
+) {
+  console.log(typeId,subtypeId,idUser);
+  const uploadDir = process.env.FILE_UPLOADS_DIR || 'uploads';
+  const uploadedFiles = files ? files.map(file => join('/', uploadDir, 'citypoints', file.filename)) : [];
+
+  const facilities = createCityPointDto.facilities ? createCityPointDto.facilities.map(Number) : [];
+
+  const cityPointDto: CreateCityPointOfInterestDto = {
     ...createCityPointDto,
-    images: uploadedFiles.length > 0 ? uploadedFiles : createCityPointDto.images || [],
-    facilities,  // Asegúrate de que facilities se asigna correctamente
+    typeId,
+    subtypeId,
+    idUser,
+    startDate: startDate ? new Date(startDate) : undefined,
+    images: uploadedFiles,
+    facilities,
   };
-    return this.cityPointOfInterestService.create(cityPointDto);
-  }
-  
+
+  return this.cityPointOfInterestService.create(cityPointDto);
+}
 
   @Get()
   @Roles(UserRole.USER, UserRole.ADMIN)
@@ -153,41 +159,77 @@ export class CityPointOfInterestController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.USER, UserRole.ADMIN)
-  @ApiOperation({ summary: 'Update a city point of interest' })
-  @ApiResponse({ status: 200, description: 'The city point of interest has been successfully updated' })
-  @ApiResponse({ status: 404, description: 'City point of interest not found' })
-  @ApiResponse({ status: 400, description: 'Bad Request' })
-  @UseInterceptors(
-    FilesInterceptor('images', 10, {
-      storage: diskStorage({
-        destination: (req, file, cb) => {
-          const uploadPath = path.join(process.env.FILE_UPLOADS_DIR, 'citypoints');
-          fs.promises.mkdir(uploadPath, { recursive: true })
-            .then(() => cb(null, uploadPath))
-            .catch(err => cb(err, uploadPath));
+@Roles(UserRole.USER, UserRole.ADMIN)
+@ApiOperation({ summary: 'Update a city point of interest' })
+@ApiResponse({ status: 200, description: 'The city point of interest has been successfully updated' })
+@ApiResponse({ status: 404, description: 'City point of interest not found' })
+@ApiResponse({ status: 400, description: 'Bad Request' })
+@ApiConsumes('multipart/form-data')
+@ApiBody({
+  schema: {
+    type: 'object',
+    properties: {
+      name: { type: 'string' },
+      description: { type: 'string' },
+      typeId: { type: 'number' },
+      subtypeId: { type: 'number' },
+      facilities: {
+        type: 'array',
+        items: { type: 'number' },
+      },
+      startDate: { type: 'string', format: 'date-time' },
+      imagesToRemove: {
+        type: 'array',
+        items: { type: 'string' },
+      },
+      images: {
+        type: 'array',
+        items: {
+          type: 'string',
+          format: 'binary',
         },
-        filename: (req, file, cb) => {
-          const customFilename = file.originalname;
-          const extension = path.extname(file.originalname);
-          const fullFilename = `${customFilename}${extension}`;
-          cb(null, fullFilename);
-        },
-      }),
-    })
-  )
-  async update(
-    @Param('id') id: string,
-    @Body() updateCityPointDto: UpdateCityPointOfInterestDto,
-    @UploadedFiles() files: Express.Multer.File[]
-  ) {
-    const uploadedFiles = files ? files.map(file => `/uploads/citypoints/${file.filename}`) : [];
-    const cityPointDto = {
-      ...updateCityPointDto,
-      images: uploadedFiles.length > 0 ? uploadedFiles : updateCityPointDto.images || []
-    };
-    return this.cityPointOfInterestService.update(+id, cityPointDto);
-  }
+      },
+    },
+  },
+})
+@UseInterceptors(
+  FilesInterceptor('images', 10, {
+    storage: diskStorage({
+      destination: (req, file, cb) => {
+        const uploadDir = process.env.FILE_UPLOADS_DIR || 'uploads';
+        const cityPointsDir = join(uploadDir, 'citypoints');
+        if (!existsSync(cityPointsDir)) {
+          mkdirSync(cityPointsDir, { recursive: true });
+        }
+        cb(null, cityPointsDir);
+      },
+      filename: (req, file, cb) => {
+        const uniqueFilename = `${uuidv4()}${extname(file.originalname)}`;
+        cb(null, uniqueFilename);
+      },
+    }),
+  })
+)
+async update(
+  @Param('id', ParseIntPipe) id: number,
+  @Body() updateCityPointDto: UpdateCityPointOfInterestDto,
+  @UploadedFiles() files: Express.Multer.File[]
+) {
+  const uploadDir = process.env.FILE_UPLOADS_DIR || 'uploads';
+  const uploadedFiles = files ? files.map(file => join('/', uploadDir, 'citypoints', file.filename)) : [];
+  
+  const cityPointDto = {
+    ...updateCityPointDto,
+    facilities: updateCityPointDto.facilities ? updateCityPointDto.facilities.map(Number) : undefined,
+    imagesToRemove: Array.isArray(updateCityPointDto.imagesToRemove) 
+      ? updateCityPointDto.imagesToRemove 
+      : updateCityPointDto.imagesToRemove 
+        ? JSON.parse(updateCityPointDto.imagesToRemove as string) 
+        : undefined,
+  };
+
+  return this.cityPointOfInterestService.update(id, cityPointDto, uploadedFiles);
+}
 
   @Delete(':id')
   @Roles(UserRole.USER, UserRole.ADMIN)
