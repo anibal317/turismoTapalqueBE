@@ -8,6 +8,10 @@
       {
         "include": "src/templates/**/*",
         "outDir": "dist/src/templates"
+      },
+      {
+        "include": "updates/**/*",
+        "outDir": "dist/updates"
       }
     ]
   }
