@@ -29,38 +29,15 @@ async function bootstrap() {
 
 
   // Obtener los orígenes permitidos desde las variables de entorno
-  // let allowedOrigins = configService.get<string>('CORS_ALLOWED_ORIGINS')?.split(',');
-  // app.enableCors({
-  //   origin: ['https://tapalque.tur.ar/', 'http://localhost:3000', 'locahost','https://turismo-tapalque-be.vercel.app/auth/login'],
-  //   // origin:['*'],
-  //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-  //   credentials: true,
-  //   allowedHeaders: 'application/json, Origin, X-Requested-With, Content-Type, Accept, Authentication, Access-control-allow-credentials, Access-control-allow-headers, Access-control-allow-methods, Access-control-allow-origin, User-Agent, Referer, Accept-Encoding, Accept-Language, Access-Control-Request-Headers, Cache-Control, Pragma',
-  // });
-  const allowCors = fn => async (req, res) => {
-    res.setHeader('Access-Control-Allow-Credentials', true)
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    // another common pattern
-    // res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
-    res.setHeader(
-      'Access-Control-Allow-Headers',
-      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    )
-    if (req.method === 'OPTIONS') {
-      res.status(200).end()
-      return
-    }
-    return await fn(req, res)
-  }
-  
-  const handler = (req, res) => {
-    const d = new Date()
-    res.end(d.toString())
-  }
-  
-  module.exports = allowCors(handler)
-  
+  let allowedOrigins = configService.get<string>('CORS_ALLOWED_ORIGINS')?.split(',');
+  app.enableCors({
+    origin: ['https://tapalque.tur.ar/', 'http://localhost:3000', 'locahost','https://turismo-tapalque-be.vercel.app/auth/login'],
+    // origin:['*'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+    allowedHeaders: 'application/json, Origin, X-Requested-With, Content-Type, Accept, Authentication, Access-control-allow-credentials, Access-control-allow-headers, Access-control-allow-methods, Access-control-allow-origin, User-Agent, Referer, Accept-Encoding, Accept-Language, Access-Control-Request-Headers, Cache-Control, Pragma',
+  });
+
   // Aplica el middleware globalmente
   app.use(new RedirectMiddleware().use);
 
