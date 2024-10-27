@@ -39,14 +39,14 @@ async function bootstrap() {
   });
 
   app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
     if (req.method === 'OPTIONS') {
-      res.header('Access-Control-Allow-Origin', req.headers.origin);
-      res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
-      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-      res.sendStatus(200);
-    } else {
-      next();
+      return res.status(204).send('');
     }
+    next();
   });
   
 
