@@ -29,22 +29,40 @@ async function bootstrap() {
 
 
   // Obtener los orígenes permitidos desde las variables de entorno
-  let allowedOrigins = configService.get<string>('CORS_ALLOWED_ORIGINS')?.split(',');
-  app.enableCors({
-    origin: ['https://tapalque.tur.ar/', 'http://localhost:3000', 'locahost','https://turismo-tapalque-be.vercel.app/auth/login'],
-    // origin:['*'],
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-    allowedHeaders: 'application/json, Origin, X-Requested-With, Content-Type, Accept, Authentication, Access-Control-Allow-Credentials, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Access-Control-Allow-Origin, User-Agent, Referer, Accept-Encoding, Accept-Language, Access-Control-Request-Headers, Cache-Control, Pragma',
+  app.enableCors((req, callback) => {
+    const corsOptions = {
+      origin: (origin, cb) => {
+        // Log to check which origin is received
+        console.log('Request Origin:', origin);
+        if (origin && ['https://tapalque.tur.ar/', 'http://localhost:3000', 'locahost','https://turismo-tapalque-be.vercel.app/auth/login','https://turismo-tapalque-be.vercel.app'].includes(origin)) {
+          cb(null, true);
+        } else {
+          cb(new Error('Not allowed by CORS'));
+        }
+      },
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+      credentials: true,
+      allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+    };
+    callback(null, corsOptions);
   });
+  
+
+  // app.enableCors({
+  //   origin: ['https://tapalque.tur.ar/', 'http://localhost:3000', 'locahost','https://turismo-tapalque-be.vercel.app/auth/login','https://turismo-tapalque-be.vercel.app'],
+  //   // origin:['*'],
+  //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  //   credentials: true,
+  //   allowedHeaders: 'application/json, Origin, X-Requested-With, Content-Type, Accept, Authentication, Access-Control-Allow-Credentials, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Access-Control-Allow-Origin, User-Agent, Referer, Accept-Encoding, Accept-Language, Access-Control-Request-Headers, Cache-Control, Pragma',
+  // });
 
   app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-    res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    res.header('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     if (req.method === 'OPTIONS') {
-      return res.status(204).send('');
+      return res.sendStatus(204);
     }
     next();
   });
