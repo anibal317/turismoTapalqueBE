@@ -56,16 +56,39 @@ async function bootstrap() {
   //   allowedHeaders: 'application/json, Origin, X-Requested-With, Content-Type, Accept, Authentication, Access-Control-Allow-Credentials, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Access-Control-Allow-Origin, User-Agent, Referer, Accept-Encoding, Accept-Language, Access-Control-Request-Headers, Cache-Control, Pragma',
   // });
 
-  app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    if (req.method === 'OPTIONS') {
-      return res.sendStatus(204);
-    }
-    next();
+  app.enableCors({
+    origin: [
+      'https://tapalque.tur.ar',
+      'http://localhost:3000',
+      'https://turismo-tapalque-be.vercel.app',
+    ],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders: [
+      'X-CSRF-Token', 
+      'X-Requested-With', 
+      'Accept', 
+      'Accept-Version', 
+      'Content-Length', 
+      'Content-MD5', 
+      'Content-Type', 
+      'Date', 
+      'X-Api-Version',
+      'Origin', 
+      'Authorization'
+    ].join(', '),
   });
+
+  // app.use((req, res, next) => {
+  //   res.setHeader('Access-Control-Allow-Origin', '*');
+  //   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  //   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  //   res.setHeader('Access-Control-Allow-Credentials', 'true');
+  //   if (req.method === 'OPTIONS') {
+  //     return res.sendStatus(204);
+  //   }
+  //   next();
+  // });
   
 
   // Aplica el middleware globalmente
