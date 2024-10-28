@@ -8,6 +8,7 @@ import { SwaggerTheme, SwaggerThemeNameEnum } from 'swagger-themes';
 import { StaticFilesMiddleware } from './static.middleware';
 import { Logger } from '@nestjs/common';
 import 'dotenv/config';
+import { CorsMiddleware } from './cors.middleware';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -55,7 +56,7 @@ async function bootstrap() {
   //   credentials: true,
   //   allowedHeaders: 'application/json, Origin, X-Requested-With, Content-Type, Accept, Authentication, Access-Control-Allow-Credentials, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Access-Control-Allow-Origin, User-Agent, Referer, Accept-Encoding, Accept-Language, Access-Control-Request-Headers, Cache-Control, Pragma',
   // });
-
+  app.use(new CorsMiddleware().use);
   app.enableCors({
     origin: [
       'https://tapalque.tur.ar',
