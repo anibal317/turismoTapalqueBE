@@ -2,22 +2,25 @@
   "version": 2,
   "builds": [
       {
-          "src": "src/main.ts",
-          "use": "@vercel/node"
+          "src": "./index.py",
+          "use": "@vercel/python"
       }
   ],
-  "routes": [
+  "rewrites": [
+      { "source": "/(.*)", "destination": "src/app.js" }
+  ],
+  "headers": [
       {
-          "src": "/(.*)",
-          "dest": "src/main.ts",
-          "methods": [
-              "GET",
-              "POST",
-              "PUT",
-              "PATCH",
-              "DELETE",
-              "OPTIONS"
-          ]
-      }
+        "source": "/(.*)",
+        "headers": [
+          { "key": "Access-Control-Allow-Origin", "value": "*" }
+        ]
+      },
+      {
+        "source": "/vercel_app_domain_name/(.*)",
+        "headers": [
+          { "key": "Access-Control-Allow-Origin", "value": "*" }
+        ]
+      }  
   ]
 }
