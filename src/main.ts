@@ -56,7 +56,6 @@ async function bootstrap() {
   //   credentials: true,
   //   allowedHeaders: 'application/json, Origin, X-Requested-With, Content-Type, Accept, Authentication, Access-Control-Allow-Credentials, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Access-Control-Allow-Origin, User-Agent, Referer, Accept-Encoding, Accept-Language, Access-Control-Request-Headers, Cache-Control, Pragma',
   // });
-  app.use(new CorsMiddleware().use);
   app.enableCors({
     origin: [
       'https://tapalque.tur.ar',
@@ -66,18 +65,18 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
     allowedHeaders: [
-      'X-CSRF-Token', 
-      'X-Requested-With', 
-      'Accept', 
-      'Accept-Version', 
-      'Content-Length', 
-      'Content-MD5', 
-      'Content-Type', 
-      'Date', 
+      'X-CSRF-Token',
+      'X-Requested-With',
+      'Accept',
+      'Accept-Version',
+      'Content-Length',
+      'Content-MD5',
+      'Content-Type',
+      'Date',
       'X-Api-Version',
-      'Origin', 
-      'Authorization'
-    ].join(', '),
+      'Origin',
+      'Authorization',
+    ],
   });
 
   // app.use((req, res, next) => {
