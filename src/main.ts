@@ -29,25 +29,7 @@ async function bootstrap() {
   ))
 
 
-  // Obtener los orígenes permitidos desde las variables de entorno
-  app.enableCors((req, callback) => {
-    const corsOptions = {
-      origin: (origin, cb) => {
-        // Log to check which origin is received
-        console.log('Request Origin:', origin);
-        if (origin && ['https://tapalque.tur.ar/', 'http://localhost:3000', 'locahost','https://turismo-tapalque-be.vercel.app/auth/login','https://turismo-tapalque-be.vercel.app'].includes(origin)) {
-          cb(null, true);
-        } else {
-          cb(new Error('Not allowed by CORS'));
-        }
-      },
-      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-      credentials: true,
-      allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
-    };
-    callback(null, corsOptions);
-  });
-  
+ 
 
   app.enableCors({
     origin: ['https://tapalque.tur.ar/', 'http://localhost:3000', 'locahost','https://turismo-tapalque-be.vercel.app/auth/login','https://turismo-tapalque-be.vercel.app'],
