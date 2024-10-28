@@ -19,7 +19,5 @@
               "OPTIONS"
           ]
       }
-  ],
-   "source": "/feedback/:id",
-"destination": "/api/feedback/:id"
+  ]
 }
