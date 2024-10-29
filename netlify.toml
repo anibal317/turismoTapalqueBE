@@ -4,7 +4,7 @@
 
 [[redirects]]
   from = "/*"
-  to = "src/main.ts"
+  to = "/src/main.ts" # Verifica que esta ruta sea correcta y necesaria.
   status = 200
 
 [environment]
