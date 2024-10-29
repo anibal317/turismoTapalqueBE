@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { TypeEntityService } from './type-entity.service';
 import { CreateTypeEntityDto } from './dto/create-type-entity.dto';
 import { UpdateTypeEntityDto } from './dto/update-type-entity.dto';
@@ -9,6 +9,7 @@ import { UserRole } from '../common/decorators/user-role.enum';
 
 @ApiTags('Type Entity')  // Agrupar este controlador bajo la etiqueta 'Type Entity' en Swagger
 @Controller('type-entity')
+@ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))  // Proteger todos los endpoints con autenticación JWT
 export class TypeEntityController {
   constructor(private readonly typeEntityService: TypeEntityService) { }
@@ -43,7 +44,6 @@ export class TypeEntityController {
   @ApiOperation({ summary: 'Obtener todos los tipos' })
   @ApiResponse({ status: 200, description: 'Lista de tipos obtenida correctamente' })
   @ApiResponse({ status: 500, description: 'Error interno del servidor' })
-  @Roles(UserRole.ADMIN, UserRole.USER)
   async findAll() {
     try {
       return await this.typeEntityService.findAll();
@@ -57,7 +57,6 @@ export class TypeEntityController {
   @ApiParam({ name: 'id', description: 'ID del tipo a obtener' })
   @ApiResponse({ status: 200, description: 'Tipo obtenido correctamente' })
   @ApiResponse({ status: 404, description: 'Tipo no encontrado' })
-  @Roles(UserRole.ADMIN, UserRole.USER)
   async findOne(@Param('id') id: string) {
     try {
       return await this.typeEntityService.findOne(+id);
@@ -67,6 +66,7 @@ export class TypeEntityController {
   }
 
   @Patch(':id')
+  @Roles(UserRole.ADMIN, UserRole.USER)
   @ApiOperation({ summary: 'Actualizar un tipo por su ID' })
   @ApiParam({ name: 'id', description: 'ID del tipo a actualizar' })
   @ApiBody({

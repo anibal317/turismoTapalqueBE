@@ -1,19 +1,23 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Put } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserBasicInfoDto, UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../common/decorators/user-role.enum';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 
 @ApiTags('User')  // Agrupar este controlador bajo la etiqueta 'User' en Swagger
+@ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('user')
 // @UseGuards(AuthGuard('jwt'))  // Puedes habilitar la autenticación según sea necesario
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
+  @Roles(UserRole.USER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Crear un nuevo usuario' })
   @ApiBody({
     type: CreateUserDto,
@@ -61,6 +65,7 @@ export class UserController {
   @ApiParam({ name: 'id', description: 'ID del perfil del usuario a obtener' })
   @ApiResponse({ status: 200, description: 'Perfil de usuario obtenido correctamente' })
   @ApiResponse({ status: 404, description: 'Perfil no encontrado' })
+  @Roles(UserRole.USER, UserRole.ADMIN)
   findOneProfile(@Param('id') id: string) {
     return this.userService.findOne(+id);
   }

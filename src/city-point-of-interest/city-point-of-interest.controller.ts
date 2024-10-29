@@ -101,7 +101,6 @@ export class CityPointOfInterestController {
   }
 
   @Get()
-  @Roles(UserRole.USER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Get all city points of interest' })
   @ApiResponse({ status: 200, description: 'Returns all city points of interest' })
   @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Limit the number of results' })
@@ -143,7 +142,6 @@ export class CityPointOfInterestController {
   }
 
   @Get(':id')
-  @Roles(UserRole.USER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Get a specific city point of interest' })
   @ApiResponse({ status: 200, description: 'Returns the specified city point of interest' })
   @ApiResponse({ status: 404, description: 'City point of interest not found' })

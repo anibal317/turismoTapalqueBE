@@ -1,15 +1,22 @@
-import { Controller, Post, Body, Param, Get, Delete, Put, Query, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { Controller, Post, Body, Param, Get, Delete, Put, Query, HttpStatus, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { SubtypeEntityService } from './subtype-entity.service';
 import { CreateSubtypeEntityDto } from './dto/create-subtype-entity.dto';
 import { UpdateSubtypeEntityDto } from './dto/update-subtype-entity.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { UserRole } from 'src/common/decorators/user-role.enum';
 
 @ApiTags('Subtypes')  // Agrupar este controlador bajo la etiqueta 'Subtypes' en Swagger
+@ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('subtypes')
 export class SubtypeEntityController {
   constructor(private readonly subtypeService: SubtypeEntityService) {}
 
   @Post()
+  @Roles(UserRole.USER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Crear un nuevo subtipo' })
   @ApiBody({ 
     type: CreateSubtypeEntityDto,  // Definir el cuerpo del POST
@@ -58,6 +65,7 @@ export class SubtypeEntityController {
   }
 
   @Put(':id')
+  @Roles(UserRole.USER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Actualizar un subtipo por su ID' })
   @ApiParam({ name: 'id', description: 'ID del subtipo a actualizar' })
   @ApiBody({ 
@@ -82,6 +90,7 @@ export class SubtypeEntityController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.USER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Eliminar un subtipo por su ID' })
   @ApiParam({ name: 'id', description: 'ID del subtipo a eliminar' })
   @ApiResponse({ status: 200, description: 'Subtipo eliminado correctamente' })
