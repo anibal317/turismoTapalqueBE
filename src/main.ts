@@ -13,22 +13,11 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  // Middleware para CORS - DEBE IR PRIMERO
-  app.use((req, res, next) => {
-    // Configurar headers CORS
-    res.header('Access-Control-Allow-Origin', 'https://tapalque.tur.ar');
-    res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization, X-Requested-With');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Max-Age', '86400');
-
-    // Manejar preflight requests
-    if (req.method === 'OPTIONS') {
-      res.status(204).end();
-      return;
-    }
-
-    next();
+  app.enableCors({
+    origin: true,
+    methods: '*',
+    allowedHeaders: '*',
+    credentials: true,
   });
 
   // Registra el middleware antes de todas las rutas
