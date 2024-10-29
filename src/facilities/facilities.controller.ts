@@ -10,13 +10,12 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 
 @ApiTags('Facilities')
 @Controller('facilities')
-@ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'), RolesGuard)
 export class FacilitiesController {
   constructor(private readonly facilitiesService: FacilitiesService) {}
 
   @Post()
-  @Roles(UserRole.USER, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOperation({ summary: 'Create a new facility' })
   @ApiResponse({ status: 201, description: 'The facility has been successfully created.' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
@@ -57,7 +56,8 @@ export class FacilitiesController {
   @ApiOperation({ summary: 'Update a facility' })
   @ApiResponse({ status: 200, description: 'The facility has been successfully updated.' })
   @ApiResponse({ status: 404, description: 'Facility not found' })
-  @Roles(UserRole.USER, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiBody({
     description: 'Updated Facility Data',
     type: UpdateFacilityDto,
@@ -79,11 +79,12 @@ export class FacilitiesController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.USER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Delete a facility by ID' })
   @ApiResponse({ status: 200, description: 'The facility has been successfully deleted.' })
   @ApiResponse({ status: 404, description: 'Facility not found' })
   @ApiParam({ name: 'id', description: 'ID of the facility', type: 'integer', example: 1 })
+  @ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'), RolesGuard)
   remove(@Param('id') id: number) {
     return this.facilitiesService.remove(id);
   }

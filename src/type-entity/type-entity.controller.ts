@@ -6,11 +6,10 @@ import { UpdateTypeEntityDto } from './dto/update-type-entity.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../common/decorators/user-role.enum';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 
 @ApiTags('Type Entity')  // Agrupar este controlador bajo la etiqueta 'Type Entity' en Swagger
 @Controller('type-entity')
-@ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))  // Proteger todos los endpoints con autenticación JWT
 export class TypeEntityController {
   constructor(private readonly typeEntityService: TypeEntityService) { }
 
@@ -31,7 +30,8 @@ export class TypeEntityController {
   })
   @ApiResponse({ status: 201, description: 'Tipo creado correctamente' })
   @ApiResponse({ status: 400, description: 'Error de validación al crear tipo' })
-  @Roles(UserRole.ADMIN, UserRole.USER)
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   async create(@Body() createTypeEntityDto: CreateTypeEntityDto) {
     try {
       return await this.typeEntityService.create(createTypeEntityDto);
@@ -66,7 +66,8 @@ export class TypeEntityController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN, UserRole.USER)
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOperation({ summary: 'Actualizar un tipo por su ID' })
   @ApiParam({ name: 'id', description: 'ID del tipo a actualizar' })
   @ApiBody({
@@ -85,7 +86,6 @@ export class TypeEntityController {
   @ApiResponse({ status: 200, description: 'Tipo actualizado correctamente' })
   @ApiResponse({ status: 400, description: 'Error de validación al actualizar tipo' })
   @ApiResponse({ status: 404, description: 'Tipo no encontrado' })
-  @Roles(UserRole.ADMIN, UserRole.USER)
   async update(@Param('id') id: string, @Body() updateTypeEntityDto: UpdateTypeEntityDto) {
     try {
       return await this.typeEntityService.update(+id, updateTypeEntityDto);
@@ -99,7 +99,8 @@ export class TypeEntityController {
   @ApiParam({ name: 'id', description: 'ID del tipo a eliminar' })
   @ApiResponse({ status: 200, description: 'Tipo eliminado correctamente' })
   @ApiResponse({ status: 404, description: 'Tipo no encontrado' })
-  @Roles(UserRole.ADMIN, UserRole.USER)
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   async remove(@Param('id') id: string) {
     try {
       return await this.typeEntityService.remove(+id);

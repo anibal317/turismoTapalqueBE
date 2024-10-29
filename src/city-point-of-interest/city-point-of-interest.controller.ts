@@ -15,13 +15,13 @@ import { existsSync, mkdirSync } from 'fs';
 
 
 @ApiTags('City Points of Interest')
-@ApiBearerAuth()
 @Controller('city-point-of-interest')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
 export class CityPointOfInterestController {
   constructor(private readonly cityPointOfInterestService: CityPointOfInterestService) { }
 
   @Post()
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(UserRole.USER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Create a new city point of interest' })
   @ApiResponse({ status: 201, description: 'The city point of interest has been successfully created' })
@@ -158,6 +158,8 @@ export class CityPointOfInterestController {
   }
 
   @Patch(':id')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(UserRole.USER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Update a city point of interest' })
   @ApiResponse({ status: 200, description: 'The city point of interest has been successfully updated' })
@@ -231,6 +233,8 @@ export class CityPointOfInterestController {
   }
 
   @Delete(':id')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(UserRole.USER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Delete a city point of interest' })
   @ApiResponse({ status: 200, description: 'The city point of interest has been successfully deleted' })

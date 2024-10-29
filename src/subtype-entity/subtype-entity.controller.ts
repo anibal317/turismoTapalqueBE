@@ -9,14 +9,13 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/common/decorators/user-role.enum';
 
 @ApiTags('Subtypes')  // Agrupar este controlador bajo la etiqueta 'Subtypes' en Swagger
-@ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('subtypes')
 export class SubtypeEntityController {
   constructor(private readonly subtypeService: SubtypeEntityService) {}
 
   @Post()
-  @Roles(UserRole.USER, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOperation({ summary: 'Crear un nuevo subtipo' })
   @ApiBody({ 
     type: CreateSubtypeEntityDto,  // Definir el cuerpo del POST
@@ -65,7 +64,8 @@ export class SubtypeEntityController {
   }
 
   @Put(':id')
-  @Roles(UserRole.USER, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOperation({ summary: 'Actualizar un subtipo por su ID' })
   @ApiParam({ name: 'id', description: 'ID del subtipo a actualizar' })
   @ApiBody({ 
@@ -90,7 +90,8 @@ export class SubtypeEntityController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.USER, UserRole.ADMIN)
+  @ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOperation({ summary: 'Eliminar un subtipo por su ID' })
   @ApiParam({ name: 'id', description: 'ID del subtipo a eliminar' })
   @ApiResponse({ status: 200, description: 'Subtipo eliminado correctamente' })

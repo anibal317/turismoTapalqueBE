@@ -9,15 +9,14 @@ import { UserRole } from '../common/decorators/user-role.enum';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 
 @ApiTags('User')  // Agrupar este controlador bajo la etiqueta 'User' en Swagger
-@ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('user')
 // @UseGuards(AuthGuard('jwt'))  // Puedes habilitar la autenticación según sea necesario
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  @Roles(UserRole.USER, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOperation({ summary: 'Crear un nuevo usuario' })
   @ApiBody({
     type: CreateUserDto,
@@ -90,12 +89,15 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'Usuario actualizado correctamente' })
   @ApiResponse({ status: 400, description: 'Error de validación al actualizar usuario' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
-  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto);
   }
 
   @Put(':id')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOperation({ summary: 'Actualizar la información básica de un usuario por su ID' })
   @ApiParam({ name: 'id', description: 'ID del usuario para actualizar su información básica' })
   @ApiBody({
@@ -123,7 +125,8 @@ export class UserController {
   @ApiParam({ name: 'id', description: 'ID del usuario a eliminar' })
   @ApiResponse({ status: 200, description: 'Usuario eliminado correctamente' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
-  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
   }
