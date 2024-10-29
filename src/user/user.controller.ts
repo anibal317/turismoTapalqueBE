@@ -9,14 +9,15 @@ import { UserRole } from '../common/decorators/user-role.enum';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 
 @ApiTags('User')  // Agrupar este controlador bajo la etiqueta 'User' en Swagger
-@Controller('user')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Controller('user')
 // @UseGuards(AuthGuard('jwt'))  // Puedes habilitar la autenticación según sea necesario
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Crear un nuevo usuario' })
   @ApiBody({
     type: CreateUserDto,
@@ -64,7 +65,7 @@ export class UserController {
   @ApiParam({ name: 'id', description: 'ID del perfil del usuario a obtener' })
   @ApiResponse({ status: 200, description: 'Perfil de usuario obtenido correctamente' })
   @ApiResponse({ status: 404, description: 'Perfil no encontrado' })
-  @Roles(UserRole.USER, UserRole.ADMIN)
+  @Roles(UserRole.ADMIN)
   findOneProfile(@Param('id') id: string) {
     return this.userService.findOne(+id);
   }
@@ -89,8 +90,7 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'Usuario actualizado correctamente' })
   @ApiResponse({ status: 400, description: 'Error de validación al actualizar usuario' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.ADMIN)
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto);
   }
@@ -100,6 +100,7 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOperation({ summary: 'Actualizar la información básica de un usuario por su ID' })
   @ApiParam({ name: 'id', description: 'ID del usuario para actualizar su información básica' })
+  @Roles(UserRole.ADMIN)
   @ApiBody({
     type: UpdateUserBasicInfoDto,
     description: 'Datos para actualizar la información básica de un usuario',
@@ -116,6 +117,7 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'Información básica del usuario actualizada correctamente' })
   @ApiResponse({ status: 400, description: 'Error de validación al actualizar la información básica del usuario' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
+  @Roles(UserRole.ADMIN)
   updatebasicdata(@Param('id') id: string, @Body() updateUserDto: UpdateUserBasicInfoDto) {
     return this.userService.update(+id, updateUserDto);
   }
@@ -125,8 +127,7 @@ export class UserController {
   @ApiParam({ name: 'id', description: 'ID del usuario a eliminar' })
   @ApiResponse({ status: 200, description: 'Usuario eliminado correctamente' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.ADMIN)
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
   }
