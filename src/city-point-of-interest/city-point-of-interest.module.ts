@@ -10,6 +10,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { User } from '../user/entities/user.entity';
 import { FacilitiesModule } from 'src/facilities/facilities.module';
 import { Facility } from 'src/facilities/entities/facility.entity';
+
 @Module({
   imports: [TypeOrmModule.forFeature([CityPointOfInterest, TypeEntity, SubtypeEntity,User,Facility]),
   JwtModule.register({
