@@ -1,9 +1,14 @@
 [build]
   command = "npm run build"
   publish = "dist"
-  functions = "dist"
+  
+[plugins."@netlify/plugin-nextjs"]
+  enabled = false
   
 [[redirects]]
   from = "/*"
   to = "src/main.ts"
   status = 200
+
+[environment]
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"
