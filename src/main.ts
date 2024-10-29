@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationError, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { SwaggerTheme, SwaggerThemeNameEnum } from 'swagger-themes';
@@ -13,25 +13,59 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  app.enableCors({
-    origin: true,
-    methods: '*',
-    allowedHeaders: '*',
-    credentials: true,
-  });
-
   // Registra el middleware antes de todas las rutas
   app.use('/templates', new StaticFilesMiddleware().use);
+
+   // Configuración de CORS - DEBE IR PRIMERO
+   app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', 'https://tapalque.tur.ar');
+    res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization, X-Requested-With');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Max-Age', '86400');
+
+    if (req.method === 'OPTIONS') {
+      res.status(204).end();
+      return;
+    }
+    next();
+  });
+
+  // Middleware para logging detallado
+  app.use((req, res, next) => {
+    console.log('Request:', {
+      method: req.method,
+      path: req.path,
+      body: req.body,
+      headers: req.headers
+    });
+    next();
+  });
+
 
   app.useGlobalPipes(new ValidationPipe(
     {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      stopAtFirstError: true,
-      exceptionFactory: (errors) => new BadRequestException(errors),
-    }
-  ))
+      transformOptions: {
+        enableImplicitConversion: true
+      },
+      validateCustomDecorators: true,
+      stopAtFirstError: false, // Cambiado a false para ver todos los errores
+      exceptionFactory: (errors: ValidationError[]) => {
+        const messages = errors.map(error => ({
+          field: error.property,
+          errors: Object.values(error.constraints || {})
+        }));
+        console.log('Validation Errors:', JSON.stringify(messages, null, 2));
+        return new BadRequestException({
+          statusCode: 400,
+          message: 'Validation failed',
+          errors: messages
+        });
+      }
+    }));
 
 
 
