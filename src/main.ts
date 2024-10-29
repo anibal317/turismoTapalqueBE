@@ -34,20 +34,27 @@ async function bootstrap() {
     origin:'*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
-    // allowedHeaders: 'application/json, Origin, X-Requested-With, Content-Type, Accept, Authorization, Authentication, Access-Control-Allow-Credentials, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Access-Control-Allow-Origin, User-Agent, Referer, Accept-Encoding, Accept-Language, Access-Control-Request-Headers, Cache-Control, Pragma',
-      allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+    allowedHeaders: 'application/json, Origin, X-Requested-With, Content-Type, Accept, Authorization, Authentication, Access-Control-Allow-Credentials, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Access-Control-Allow-Origin, User-Agent, Referer, Accept-Encoding, Accept-Language, Access-Control-Request-Headers, Cache-Control, Pragma',
+      // allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
   });
-  
+
 // Middleware para responder a OPTIONS
 app.use((req, res, next) => {
   if (req.method === 'OPTIONS') {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    // res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Headers', 'application/json, Origin, X-Requested-With, Content-Type, Accept, Authorization, Authentication, Access-Control-Allow-Credentials, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Access-Control-Allow-Origin, User-Agent, Referer, Accept-Encoding, Accept-Language, Access-Control-Request-Headers, Cache-Control, Pragma');
     res.status(204).send(); // Responde con No Content para OPTIONS
   } else {
     next();
   }
+});
+
+app.use((req, res, next) => {
+  console.log(`Request Headers: ${JSON.stringify(req.headers)}`);
+  console.log(`Request Body: ${JSON.stringify(req.body)}`);
+  next();
 });
 
   function Swagger() {
