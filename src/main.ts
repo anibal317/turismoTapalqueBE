@@ -13,6 +13,24 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
+  // Middleware para CORS - DEBE IR PRIMERO
+  app.use((req, res, next) => {
+    // Configurar headers CORS
+    res.header('Access-Control-Allow-Origin', 'https://tapalque.tur.ar');
+    res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization, X-Requested-With');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Max-Age', '86400');
+
+    // Manejar preflight requests
+    if (req.method === 'OPTIONS') {
+      res.status(204).end();
+      return;
+    }
+
+    next();
+  });
+
   // Registra el middleware antes de todas las rutas
   app.use('/templates', new StaticFilesMiddleware().use);
 
@@ -25,37 +43,6 @@ async function bootstrap() {
       exceptionFactory: (errors) => new BadRequestException(errors),
     }
   ))
-
-  // Simplifica la configuración de CORS
-  app.enableCors({
-    origin: 'https://tapalque.tur.ar',
-    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    credentials: true,
-    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization', 'Authentication'],
-    preflightContinue: false,
-    optionsSuccessStatus: 204
-  });
-
-  // app.use((req, res, next) => {
-  //   console.log(`Request Headers: ${JSON.stringify(req.headers)}`);
-  //   console.log(`Request Method: ${req.method}`);
-  //   next();
-  // });
-
-  app.use((req, res, next) => {
-    console.log(`${req.method} ${req.url}`);
-    console.log('Headers:', JSON.stringify(req.headers, null, 2));
-    next();
-  });
-
-  // app.enableCors({
-  //   // origin: ['https://tapalque.tur.ar/', 'http://localhost:3000', 'localhost','https://turismo-tapalque-be.vercel.app/auth/login','https://turismo-tapalque-be.vercel.app'],
-  //   origin:'*',
-  //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-  //   credentials: true,
-  //   allowedHeaders: 'application/json, Origin, X-Requested-With, Content-Type, Accept, Authorization, Authentication, Access-Control-Allow-Credentials, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Access-Control-Allow-Origin, User-Agent, Referer, Accept-Encoding, Accept-Language, Access-Control-Request-Headers, Cache-Control, Pragma',
-  //     // allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
-  // });
 
 
 
@@ -103,6 +90,19 @@ async function bootstrap() {
   }
 
   Swagger();
+
+
+
+  // Middleware para logging (opcional, para debugging)
+  app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    next();
+  });
+
+
+
+
   const port = process.env.PORT || 3001;
   await app.listen(port);
   console.log('http://localhost:3001')
