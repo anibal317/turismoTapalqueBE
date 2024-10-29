@@ -2,14 +2,11 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { RedirectMiddleware } from './redirect.middleware';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { SwaggerTheme, SwaggerThemeNameEnum } from 'swagger-themes';
 import { StaticFilesMiddleware } from './static.middleware';
 import { Logger } from '@nestjs/common';
 import 'dotenv/config';
-import { CorsMiddleware } from './cors.middleware';
-import { LoggingMiddleware } from './logging.middleware';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -30,30 +27,28 @@ async function bootstrap() {
   ))
 
 
-  app.use(new LoggingMiddleware().use);
+
 
   app.enableCors({
     // origin: ['https://tapalque.tur.ar/', 'http://localhost:3000', 'localhost','https://turismo-tapalque-be.vercel.app/auth/login','https://turismo-tapalque-be.vercel.app'],
     origin:'*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: false,
-    allowedHeaders: 'application/json, Origin, X-Requested-With, Content-Type, Accept, Authorization, Authentication, Access-Control-Allow-Credentials, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Access-Control-Allow-Origin, User-Agent, Referer, Accept-Encoding, Accept-Language, Access-Control-Request-Headers, Cache-Control, Pragma',
+    credentials: true,
+    // allowedHeaders: 'application/json, Origin, X-Requested-With, Content-Type, Accept, Authorization, Authentication, Access-Control-Allow-Credentials, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Access-Control-Allow-Origin, User-Agent, Referer, Accept-Encoding, Accept-Language, Access-Control-Request-Headers, Cache-Control, Pragma',
+      allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
   });
-
-  // app.use((req, res, next) => {
-  //   res.setHeader('Access-Control-Allow-Origin', '*');
-  //   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  //   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  //   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  //   if (req.method === 'OPTIONS') {
-  //     return res.sendStatus(204);
-  //   }
-  //   next();
-  // });
   
-
-  // Aplica el middleware globalmente
-  app.use(new RedirectMiddleware().use);
+// Middleware para responder a OPTIONS
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.status(204).send(); // Responde con No Content para OPTIONS
+  } else {
+    next();
+  }
+});
 
   function Swagger() {
     const config = new DocumentBuilder()
