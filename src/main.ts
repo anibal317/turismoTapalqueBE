@@ -28,18 +28,26 @@ async function bootstrap() {
 
   // Simplifica la configuración de CORS
   app.enableCors({
-    origin: true, // Permite todas las origenes en desarrollo
-    // origin: ['https://tapalque.tur.ar', 'http://localhost:3000'], // Para producción, especifica los dominios
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    origin: 'https://tapalque.tur.ar',
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     credentials: true,
-    allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With',
+    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization', 'Authentication'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
   });
 
+  // app.use((req, res, next) => {
+  //   console.log(`Request Headers: ${JSON.stringify(req.headers)}`);
+  //   console.log(`Request Method: ${req.method}`);
+  //   next();
+  // });
+
   app.use((req, res, next) => {
-    console.log(`Request Headers: ${JSON.stringify(req.headers)}`);
-    console.log(`Request Method: ${req.method}`);
+    console.log(`${req.method} ${req.url}`);
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
     next();
   });
+
   // app.enableCors({
   //   // origin: ['https://tapalque.tur.ar/', 'http://localhost:3000', 'localhost','https://turismo-tapalque-be.vercel.app/auth/login','https://turismo-tapalque-be.vercel.app'],
   //   origin:'*',
